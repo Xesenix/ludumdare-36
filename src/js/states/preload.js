@@ -17,6 +17,7 @@ Preload.prototype = {
 		this.load.image('hero-dead', 'assets/hero-dead.png');
 		this.load.image('rock', 'assets/rock.png');
 		this.load.image('rock-dead', 'assets/rock-dead.png');
+		this.load.image('block', 'assets/block.png');
 
 	},
 	create: function() {
