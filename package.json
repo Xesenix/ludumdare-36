@@ -1,0 +1,24 @@
+{
+  "name": "phaser-game",
+  "version": "0.1.0",
+  "description": "phaser game",
+  "private": true,
+  "keywords": [
+    "phaser"
+  ],
+  "dependencies": {
+    "lodash": "^4.15.0",
+    "phaser": "^2.6.1"
+  },
+  "devDependencies": {
+    "babelify": "^7.3.0",
+    "grunt": "~0.4.2",
+    "grunt-babel": "^6.0.0",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-nodeunit": "^1.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "nodeunit": "^0.9.1"
+  }
+}
