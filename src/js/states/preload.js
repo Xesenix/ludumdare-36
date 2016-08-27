@@ -1,4 +1,5 @@
 'use strict';
+/* global Phaser */
 
 function Preload() {
 	this.asset = null;
@@ -18,6 +19,9 @@ Preload.prototype = {
 		this.load.image('rock', 'assets/rock.png');
 		this.load.image('rock-dead', 'assets/rock-dead.png');
 		this.load.image('block', 'assets/block.png');
+		
+		this.load.tilemap('map', 'assets/test.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.image('tiles', 'assets/tiles.png');
 
 	},
 	create: function() {
