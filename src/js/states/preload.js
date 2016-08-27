@@ -13,6 +13,10 @@ Preload.prototype = {
 		this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
 		this.load.setPreloadSprite(this.asset);
 		this.load.image('ludumdare-logo', 'assets/phaser-logo.png');
+		this.load.image('hero', 'assets/hero.png');
+		this.load.image('hero-dead', 'assets/hero-dead.png');
+		this.load.image('rock', 'assets/rock.png');
+		this.load.image('rock-dead', 'assets/rock-dead.png');
 
 	},
 	create: function() {
@@ -20,7 +24,7 @@ Preload.prototype = {
 	},
 	update: function() {
 		if (!!this.ready) {
-			this.game.state.start('intro');
+			this.game.state.start('play');
 		}
 	},
 	onLoadComplete: function() {
