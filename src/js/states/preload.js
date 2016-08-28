@@ -19,6 +19,10 @@ Preload.prototype = {
 		this.load.image('rock', 'assets/rock.png');
 		this.load.image('rock-dead', 'assets/rock-dead.png');
 		this.load.image('block', 'assets/block.png');
+		this.load.image('bow', 'assets/bow.png');
+		this.load.image('arrow', 'assets/arrow.png');
+		this.load.image('techcard', 'assets/techcard.png');
+		this.load.image('arrow-dead', 'assets/broken-arrow.png');
 		
 		this.load.tilemap('map', 'assets/test.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.tilemap('level-1', 'assets/level01.json', null, Phaser.Tilemap.TILED_JSON);

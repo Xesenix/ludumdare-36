@@ -218,17 +218,20 @@
   </tile>
   <tile id="45">
    <properties>
-    <property name="type" value="Arrow"/>
+    <property name="direction" value="L"/>
+    <property name="type" value="Bow"/>
    </properties>
   </tile>
   <tile id="46">
    <properties>
-    <property name="type" value="Arrow"/>
+    <property name="direction" value="R"/>
+    <property name="type" value="Bow"/>
    </properties>
   </tile>
   <tile id="47">
    <properties>
-    <property name="type" value="Arrow"/>
+    <property name="direction" value="U"/>
+    <property name="type" value="Bow"/>
    </properties>
   </tile>
   <tile id="48">
@@ -271,7 +274,8 @@
   </tile>
   <tile id="55">
    <properties>
-    <property name="type" value="Arrow"/>
+    <property name="direction" value="B"/>
+    <property name="type" value="Bow"/>
    </properties>
   </tile>
   <tile id="56">
@@ -299,15 +303,20 @@
     <property name="type" value="Block"/>
    </properties>
   </tile>
+  <tile id="63">
+   <properties>
+    <property name="type" value="Techcard"/>
+   </properties>
+  </tile>
  </tileset>
  <layer name="Layout" width="12" height="9">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NkYGDQIRIzAbEREKsCsSWUxoVB8sZI6onBMPWWSOYj08h2KgGxIBHmw/SYk+gebOYT8jO6+bjUWyKp5wRiEyIxFxADABPLD0GwAQAA
+   H4sIAAAAAAAAC2NkYGDQIRIzAbEREKsCsSWUxoYtodgYST0xGKbeEsl8SzQzYWqVgFiQCPNhesxJdA828/H5WRWL+bjUWyKp5wRiEyIxFxADACPaVQGwAQAA
   </data>
  </layer>
  <layer name="Objects" width="12" height="9">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgIB/Y4RC3wKPHngRzyAEws2xJdAM+eVXynQMH1PIjAG+Wdv+wAQAA
+   H4sIAAAAAAAAC2NgwAQWWMSQgQOUtsMhj0+/PRYxXOaQA2Bm2ZLoBnzyqiS6wQGLGLofsakhBgAAYzrl3bABAAA=
   </data>
  </layer>
 </map>

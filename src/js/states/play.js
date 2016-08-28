@@ -10,43 +10,15 @@ function StaticGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
 	this.aliveSprite = aliveSprite;
 	this.deadSprite = deadSprite;
 	
-	this.hp = hp;
+	this._hp = hp;
+	this._hpMax = hp;
 	this.dmg = dmg;
 	this.def = def;
 	
+	this.blocksOnDeath = true;
 	this.canDie = false;
 	this.controllable = false;
-}
-
-StaticGameObject.prototype = Object.create(Phaser.Sprite.prototype);
-StaticGameObject.prototype.constructor = StaticGameObject;
-
-function Wall(game, x, y) {
-	StaticGameObject.call(this, game, 0, 0, 0, 'block', 'block');
-	this.x = x;
-	this.y = y;
-	this.tint = 0x888888;
-}
-
-Wall.prototype = Object.create(StaticGameObject.prototype);
-Wall.prototype.constructor = Wall;
-
-function ActiveGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
-	StaticGameObject.call(this, game,  hp, dmg, def, aliveSprite, deadSprite);
-	
-	this.commandQueueIndex = 0;
-	this.commandQueue = [];
-	this.aliveSprite = aliveSprite;
-	this.deadSprite = deadSprite;
-	
-	this.hp = hp;
-	this.dmg = dmg;
-	this.def = def;
-	this.speed = 512;
-	this.range = 64;
-	
-	this.controllable = true;
-	this.commandDeffer = null;
+	this.canCollect = false;
 	
 	this.collisionMask = 31;// everything
 	
@@ -57,6 +29,53 @@ function ActiveGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
 	this.body.collideWorldBounds = true;
 	this.body.bounce.set(0);
 	this.body.setSize(62, 62, 1, 1);
+}
+
+StaticGameObject.prototype = Object.create(Phaser.Sprite.prototype);
+StaticGameObject.prototype.constructor = StaticGameObject;
+
+Object.defineProperty(StaticGameObject.prototype, 'hp', {
+    get: function() {
+        return this._hp;
+    },
+
+    set: function(value) {
+		//console.log('HP:', value, this);
+        return this._hp = value;
+    }
+});
+
+function Techcard(game, x, y) {
+	StaticGameObject.call(this, game, 0, 0, 0, 'techcard', 'techcard');
+	this.x = x;
+	this.y = y;
+}
+
+Techcard.prototype = Object.create(StaticGameObject.prototype);
+Techcard.prototype.constructor = Techcard;
+
+Techcard.prototype.collect = function() {
+	this.alpha = 0;
+};
+
+function ActiveGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
+	StaticGameObject.call(this, game,  hp, dmg, def, aliveSprite, deadSprite);
+	
+	this.commandQueueIndex = 0;
+	this.commandQueue = [];
+	this.currentAction = null;
+	this.aliveSprite = aliveSprite;
+	this.deadSprite = deadSprite;
+	
+	this.hp = hp;
+	this.dmg = dmg;
+	this.def = def;
+	this.collisionDmg = 0;
+	this.speed = 512;
+	this.range = 64;
+	
+	this.controllable = true;
+	this.commandDeffer = null;
 }
 
 ActiveGameObject.prototype = Object.create(StaticGameObject.prototype);
@@ -108,6 +127,8 @@ ActiveGameObject.prototype.getAction = function(command) {
 };
 
 ActiveGameObject.prototype.executeCommand = function(command) {
+	this._hp = this._hpMax;
+	
 	var action = this.getAction(command);
 	
 	//action.x = Math.max(Math.min(action.x, 800 - 32), 32);
@@ -165,7 +186,9 @@ function Hero(game, x, y) {
 	this.x = x;
 	this.y = y;
 	
+	this.blocksOnDeath = false;
 	this.canDie = true;
+	this.canCollect = true;
 	
 	this.collisionMask = 1;// walls
 }
@@ -174,7 +197,7 @@ Hero.prototype = Object.create(ActiveGameObject.prototype);
 Hero.prototype.constructor = Hero;
 
 function Rock(game, x, y) {
-	ActiveGameObject.call(this, game, 1, 2, 1, 'rock', 'rock-dead');
+	ActiveGameObject.call(this, game, 2, 2, 1, 'rock', 'rock-dead');
 	this.x = x;
 	this.y = y;
 	this.range = 1024;
@@ -193,6 +216,97 @@ function Block(game, x, y) {
 
 Block.prototype = Object.create(ActiveGameObject.prototype);
 Block.prototype.constructor = Block;
+
+function Arrow(game, x, y) {
+	ActiveGameObject.call(this, game, 1, 1, 0, 'arrow', 'arrow-dead');
+	this.x = x;
+	this.y = y;
+	this.range = 1024;
+	this.blocksOnDeath = false;
+	this.controllable = false;
+	
+	this.collisionDmg = 1;
+	
+	this.body.setSize(32, 54, 0, 0);
+}
+
+Arrow.prototype = Object.create(ActiveGameObject.prototype);
+Arrow.prototype.constructor = Arrow;
+
+function Bow(game, x, y, arrow, direction) {
+	ActiveGameObject.call(this, game, 2, 0, 2, 'bow', 'bow');
+	this.x = x;
+	this.y = y;
+	this.arrow = arrow;
+	this.arrow.alpha = 0;
+	
+	this.direction = direction || 'D';
+	switch (this.direction) {
+		case 'R':
+			this.angle = -90;
+			break;
+		case 'L':
+			this.angle = 90;
+			break;
+		case 'U':
+			this.angle = 180;
+			break;
+		case 'D':
+			this.angle = 0;
+			break;
+	}
+}
+
+Bow.prototype = Object.create(ActiveGameObject.prototype);
+Bow.prototype.constructor = Bow;
+
+Bow.prototype.executeCommand = function() {
+	var action = this.getAction(this.direction);
+	this.arrow.body.x = action.x;
+	this.arrow.body.y = action.y;
+	this.arrow.angle = action.angle;
+	this.arrow.alive = true;
+	this.arrow.alpha = 1;
+	this.arrow.loadTexture(this.arrow.aliveSprite);
+	
+	//action.x = Math.max(Math.min(action.x, 800 - 32), 32);
+	//action.y = Math.max(Math.min(action.y, 600 - 32), 32);
+	
+	//var distance = Math.max(Math.abs(this.x - action.x), Math.abs(this.y - action.y)) / 64;
+	
+	return this.arrow.executeCommand(action.type);
+};
+
+Bow.prototype.getAction = function(command) {
+	var action = {
+		angle: this.angle
+	};
+	switch (command) {
+		case 'R':
+			action.x = this.x + 32;
+			action.y = this.y - 32;
+			action.type = 'right';
+			break;
+		case 'L':
+			action.x = this.x - 96;
+			action.y = this.y - 32;
+			action.type = 'left';
+			break;
+		case 'U':
+			action.x = this.x - 32;
+			action.y = this.y - 96;
+			action.type = 'up';
+			break;
+		case 'B':
+			action.x = this.x - 32;
+			action.y = this.y + 32;
+			action.type = 'down';
+			break;
+	}
+	
+	return action;
+};
+
 
 function Play() {}
 
@@ -224,6 +338,8 @@ Play.prototype = {
 		//this.mapTiles.debug = true;
 		
 		
+		this.collectableGroup = this.game.add.group();
+		this.arrowsGroup = this.game.add.group();
 		this.commandableGroup = this.game.add.group();
 		
 		var objectsLayer = this.map.layers[this.map.getLayerIndex('Objects')];
@@ -241,10 +357,22 @@ Play.prototype = {
 						case 'Block':
 							this.commandableGroup.add(new Block(this.game, tile.worldX + 32, tile.worldY + 32));
 							break;
+						case 'Bow':
+							var arrow = new Arrow(this.game, tile.worldX + 32, tile.worldY + 32);
+							this.arrowsGroup.add(arrow);
+							this.commandableGroup.add(new Bow(this.game, tile.worldX + 32, tile.worldY + 32, arrow, tile.properties.direction));
+							break;
+						case 'Techcard':
+							this.collectableGroup.add(new Techcard(this.game, tile.worldX + 32, tile.worldY + 32));
+							break;
 					}
 				}
 			}, this));
 		}, this));
+		
+		//var arrow = new Arrow(this.game, 3 * 64 + 32, 32);
+		//this.commandableGroup.add(arrow);
+		//this.commandableGroup.add(new Bow(this.game, 3 * 64 + 32, 32, arrow));
 		
 		this.setupKeyboard();
 	},
@@ -280,33 +408,65 @@ Play.prototype = {
 		
 		// use overlap for checking collision groups  
 		this.game.physics.arcade.overlap(this.mapTiles, this.commandableGroup, _.bind(this.onTileCollision, this));
+		this.game.physics.arcade.overlap(this.mapTiles, this.arrowsGroup, _.bind(this.onArrowTileCollision, this));
 		
-		this.game.physics.arcade.collide(this.commandableGroup, this.commandableGroup, _.bind(this.onCollision, this));
+		this.game.physics.arcade.overlap(this.commandableGroup, this.arrowsGroup, _.bind(this.onArrowCollision, this));
+		this.game.physics.arcade.overlap(this.commandableGroup, this.commandableGroup, _.bind(this.onCollision, this));
+		
+		this.game.physics.arcade.overlap(this.commandableGroup, this.collectableGroup, _.bind(this.onCollectableCollision, this));
+	},
+	onArrowCollision: function(obj, arrow) {
+		//console.log('onArrowCollision', obj, arrow);
+		arrow.onDeath();
+		
+		obj.hp -= Math.max(arrow.dmg - obj.def, 0);
+		
+		if (obj.hp <= 0) {
+			obj.onDeath();
+		}
+	},
+	onArrowTileCollision: function(arrow, tile) {
+		//console.log('onArrowTileCollision', tile, arrow);
+		if (parseInt(tile.properties.collisionGroup | 0) & arrow.collisionMask) {
+			arrow.onDeath();
+		}
+	},
+	onTileCollision: function(obj, tile) {
+		//a.stop();
+		//console.log('collision', obj, tile);
+		if (parseInt(tile.properties.collisionGroup | 0) & obj.collisionMask) {
+			obj.stop();
+		}
 	},
 	onCollision: function(objA, objB) {
-		if (objA.hp <= 0) {
+		if (objA.hp <= 0 && !objA.blocksOnDeath) {
 			return;
 		}
 		
-		if (objB.hp <= 0) {
+		if (objB.hp <= 0 && !objB.blocksOnDeath) {
 			return;
 		}
 		
-		if ((objA.currentAction.x > 0 && objA.body.x < objB.body.x) || (objA.currentAction.x < 0 && objA.body.x > objB.body.x)) {
-			objB.hp -= Math.max(objA.dmg - objB.def, 0);
+		if (objA.currentAction !== null) {
+			if ((objA.currentAction.x > 0 && objA.body.x < objB.body.x) || (objA.currentAction.x < 0 && objA.body.x > objB.body.x)) {
+				objB.hp -= Math.max(objA.dmg - objB.def, 0);
+			}
+			if ((objA.currentAction.y > 0 && objA.body.y < objB.body.y) || (objA.currentAction.y < 0 && objA.body.y > objB.body.y)) {
+				objB.hp -= Math.max(objA.dmg - objB.def, 0);
+			}
+			objA.hp -= objA.collisionDmg;
+			objA.stop();
 		}
-		if ((objB.currentAction.x > 0 && objB.body.x < objA.body.x) || (objB.currentAction.x < 0 && objB.body.x > objA.body.x)) {
-			objA.hp -= Math.max(objB.dmg - objA.def, 0);
+		if (objB.currentAction !== null) {
+			if ((objB.currentAction.x > 0 && objB.body.x < objA.body.x) || (objB.currentAction.x < 0 && objB.body.x > objA.body.x)) {
+				objA.hp -= Math.max(objB.dmg - objA.def, 0);
+			}
+			if ((objB.currentAction.y > 0 && objB.body.y < objA.body.y) || (objB.currentAction.y < 0 && objB.body.y > objA.body.y)) {
+				objA.hp -= Math.max(objB.dmg - objA.def, 0);
+			}
+			objB.hp -= objA.collisionDmg;
+			objB.stop();
 		}
-		if ((objA.currentAction.y > 0 && objA.body.y < objB.body.y) || (objA.currentAction.y < 0 && objA.body.y > objB.body.y)) {
-			objB.hp -= Math.max(objA.dmg - objB.def, 0);
-		}
-		if ((objB.currentAction.y > 0 && objB.body.y < objA.body.y) || (objB.currentAction.y < 0 && objB.body.y > objA.body.y)) {
-			objA.hp -= Math.max(objB.dmg - objA.def, 0);
-		}
-		
-		objA.stop();
-		objB.stop();
 		
 		if (objA.hp <= 0) {
 			objA.onDeath();
@@ -316,11 +476,11 @@ Play.prototype = {
 			objB.onDeath();
 		}
 	},
-	onTileCollision: function(a, b) {
-		//a.stop();
-		//console.log('collision', a, b);
-		if (parseInt(b.properties.collisionGroup | 0) & a.collisionMask) {
-			a.stop();
+	onCollectableCollision: function(obj, collectable) {
+		console.log('onCollectableCollision', obj, collectable);
+		
+		if (obj.canCollect) {
+			collectable.collect();
 		}
 	},
 	addCommand: function(command) {
