@@ -48,13 +48,15 @@ function ActiveGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
 	this.controllable = true;
 	this.commandDeffer = null;
 	
+	this.collisionMask = 31;// everything
+	
 	this.physicsType = Phaser.SPRITE;
 	
 	game.physics.enable(this);
 	
 	this.body.collideWorldBounds = true;
 	this.body.bounce.set(0);
-	this.body.setSize(60, 60, 2, 2);
+	this.body.setSize(62, 62, 1, 1);
 }
 
 ActiveGameObject.prototype = Object.create(StaticGameObject.prototype);
@@ -140,7 +142,7 @@ ActiveGameObject.prototype.update = function() {
 };
 
 ActiveGameObject.prototype.onDeath = function() {
-	console.log('Dead', this);
+	// console.log('Dead', this);
 	this.loadTexture(this.deadSprite);
 	this.alive = !this.canDie;
 	this.body.immovable = true;
@@ -148,7 +150,7 @@ ActiveGameObject.prototype.onDeath = function() {
 };
 
 ActiveGameObject.prototype.stop = function() {
-	console.log('stop', this);
+	// console.log('stop', this);
 	this.body.velocity.x = 0;
 	this.body.velocity.y = 0;
 	this.body.immovable = true;
@@ -164,6 +166,8 @@ function Hero(game, x, y) {
 	this.y = y;
 	
 	this.canDie = true;
+	
+	this.collisionMask = 1;// walls
 }
 
 Hero.prototype = Object.create(ActiveGameObject.prototype);
@@ -190,15 +194,6 @@ function Block(game, x, y) {
 Block.prototype = Object.create(ActiveGameObject.prototype);
 Block.prototype.constructor = Block;
 
-Block.prototype.onCollision = function(other) {
-	console.log('Hmm', other);
-	if (typeof other.stop !== 'undefined') {
-		other.stop(this);
-	}
-};
-
-var tileSize = 64;
-
 function Play() {}
 
 Play.prototype = {
@@ -211,49 +206,45 @@ Play.prototype = {
 		this.game.state.start('play');
 	},
 	create: function() {
+		if (typeof this.game.music === 'undefined') {
+			this.game.music = this.game.add.audio('melody');
+
+			this.game.music.loopFull();
+		}
+		
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 		
-		this.map = this.game.add.tilemap('map');
+		this.map = this.game.add.tilemap('level-4');
 		this.map.addTilesetImage('tiles', 'tiles');
-		this.map.setCollisionBetween(1, 64, true);
-		this.map.setCollision([37, 60], false);
-		
-		this.mapTiles = this.map.createLayer('Walls');
+		//this.map.setCollisionBetween(1, 64, true);
+		//this.map.setCollision([37, 45, 53, 54, 55, 60], false);
+		this.mapTiles = this.map.createLayer('Layout');
+		//this.mapObjects = this.map.createLayer('Objects');
 		//this.mapCollisions = this.map.createLayer('Collision');
 		//this.mapTiles.debug = true;
 		
-		this.map.setTileIndexCallback(62, function() {
-			console.log('block');
-			return true;
-		}, this);
-		
-		this.staticGroup = this.game.add.group();
-		
-		/*for (var x = 0; x < 10; x++) {
-			var wall = new Wall(this.game, x * tileSize, tileSize);
-			this.staticGroup.add(wall);
-		}*/
 		
 		this.commandableGroup = this.game.add.group();
 		
-		this.hero = new Hero(this.game, tileSize + 32, tileSize + 32);
-		//this.hero = this.game.add.sprite( tileSize, tileSize, 'hero');
+		var objectsLayer = this.map.layers[this.map.getLayerIndex('Objects')];
 		
-		this.commandableGroup.add(this.hero);
-		
-		this.rock1 = new Rock(this.game, tileSize + 32, 3 * tileSize + 32);
-		
-		this.commandableGroup.add(this.rock1);
-		
-		this.rock2 = new Rock(this.game, 10 * tileSize + 32, 5 * tileSize + 32);
-		
-		this.commandableGroup.add(this.rock2);
-		
-		this.block = new Block(this.game, 4 * tileSize + 32, 3 * tileSize + 32);
-		
-		this.commandableGroup.add(this.block);
-		
-		//this.game.physics.enable([ this.commandableGroup, this.mapCollisions ], Phaser.Physics.ARCADE);
+		_.each(objectsLayer.data, _.bind(function(row) {
+			_.each(row, _.bind(function(tile) {
+				if (typeof tile.properties.type !== 'undefined') {
+					switch (tile.properties.type) {
+						case 'Hero':
+							this.commandableGroup.add(new Hero(this.game, tile.worldX + 32, tile.worldY + 32));
+							break;
+						case 'Rock':
+							this.commandableGroup.add(new Rock(this.game, tile.worldX + 32, tile.worldY + 32));
+							break;
+						case 'Block':
+							this.commandableGroup.add(new Block(this.game, tile.worldX + 32, tile.worldY + 32));
+							break;
+					}
+				}
+			}, this));
+		}, this));
 		
 		this.setupKeyboard();
 	},
@@ -277,7 +268,7 @@ Play.prototype = {
 			this.addCommand('down');
 		}
 		
-		console.log('executing ', this.executing, this.commandQueueIndex, this.commandQueue);
+		//console.log('executing ', this.executing, this.commandQueueIndex, this.commandQueue);
 	},
 	onKeyboardUp: function () {
 	},
@@ -287,43 +278,20 @@ Play.prototype = {
 			this.commandQueueIndex ++;
 		}
 		
-		/*this.commandableGroup.forEachAlive(_.bind(function TestCollisions(obj) {
-			this.mapTiles.forEach(_.bind(function TestTile(tile, other) {
-				if (tile.data.block && Geometry.intersects(tile.getBounds(), other.getBounds())) {
-					other.onCollision(tile);
-					this.onTileCollision(tile, other);
-				}
-			}, this, _, obj));
-		}, this));	*/
+		// use overlap for checking collision groups  
+		this.game.physics.arcade.overlap(this.mapTiles, this.commandableGroup, _.bind(this.onTileCollision, this));
 		
-		/*this.commandableGroup.forEachAlive(_.bind(function TestCollisions(obj) {
-			this.commandableGroup.forEachAlive(_.bind(function TestOther(obj, other) {
-				if (obj !== other && Geometry.intersects(obj.getBounds(), other.getBounds())) {
-					obj.onCollision(other);
-					other.onCollision(obj);
-					this.onCollision(obj, other);
-				}
-			}, this, _, obj));
-		}, this));
-		
-		this.staticGroup.forEach(_.bind(function TestCollisions(obj) {
-			this.commandableGroup.forEachAlive(_.bind(function TestOther(obj, other) {
-				if (obj !== other && Geometry.intersects(obj.getBounds(), other.getBounds())) {
-					obj.onCollision(other);
-					other.onCollision(obj);
-					this.onCollision(obj, other);
-				}
-			}, this, _, obj));
-		}, this));*/
-		
-		//this.game.debug.body(this.hero);
-		//this.game.debug.body(this.block);
-		
-		this.game.physics.arcade.collide(this.mapTiles, this.commandableGroup);
 		this.game.physics.arcade.collide(this.commandableGroup, this.commandableGroup, _.bind(this.onCollision, this));
-		//this.game.physics.arcade.overlap(this.mapTiles, this.hero, this.onTileCollision);
 	},
 	onCollision: function(objA, objB) {
+		if (objA.hp <= 0) {
+			return;
+		}
+		
+		if (objB.hp <= 0) {
+			return;
+		}
+		
 		if ((objA.currentAction.x > 0 && objA.body.x < objB.body.x) || (objA.currentAction.x < 0 && objA.body.x > objB.body.x)) {
 			objB.hp -= Math.max(objA.dmg - objB.def, 0);
 		}
@@ -349,7 +317,11 @@ Play.prototype = {
 		}
 	},
 	onTileCollision: function(a, b) {
-		console.log('collision', a, b);
+		//a.stop();
+		//console.log('collision', a, b);
+		if (parseInt(b.properties.collisionGroup | 0) & a.collisionMask) {
+			a.stop();
+		}
 	},
 	addCommand: function(command) {
 		//console.log('new command ', command);
@@ -364,11 +336,11 @@ Play.prototype = {
 	},
 	onObjectCommandFinish: function(object) {
 		this.executing --;
-		console.log('finished', object.x, object.y, object.body.position);
+		// console.log('finished', object.x, object.y, object.body.position);
 		object.x = Math.round(object.body.position.x / 64) * 64 + 32;
 		object.y = Math.round(object.body.position.y / 64) * 64 + 32;
-		console.log('snap', object.body.position);
-		//console.log('command executed', this.executing);
+		// console.log('snap', object.body.position);
+		// console.log('command executed', this.executing);
 	},
 	clickListener: function() {
 		this.game.state.start('gameover');

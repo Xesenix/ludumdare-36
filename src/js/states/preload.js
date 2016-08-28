@@ -21,7 +21,14 @@ Preload.prototype = {
 		this.load.image('block', 'assets/block.png');
 		
 		this.load.tilemap('map', 'assets/test.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('level-1', 'assets/level01.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('level-2', 'assets/level02.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('level-3', 'assets/level03.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('level-4', 'assets/level04.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('level-5', 'assets/level05.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.image('tiles', 'assets/tiles.png');
+		
+		this.load.audio('melody', 'assets/melody01.wav');
 
 	},
 	create: function() {
