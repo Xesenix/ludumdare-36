@@ -212,7 +212,25 @@
  <tile id="44">
   <properties>
    <property name="collisionGroup" value="2"/>
-   <property name="level" value=""/>
+   <property name="type" value="Exit"/>
+  </properties>
+ </tile>
+ <tile id="45">
+  <properties>
+   <property name="direction" value="L"/>
+   <property name="type" value="Bow"/>
+  </properties>
+ </tile>
+ <tile id="46">
+  <properties>
+   <property name="direction" value="R"/>
+   <property name="type" value="Bow"/>
+  </properties>
+ </tile>
+ <tile id="47">
+  <properties>
+   <property name="direction" value="U"/>
+   <property name="type" value="Bow"/>
   </properties>
  </tile>
  <tile id="48">
@@ -238,19 +256,25 @@
  <tile id="52">
   <properties>
    <property name="collisionGroup" value="2"/>
-   <property name="level" value=""/>
+   <property name="type" value="Exit"/>
   </properties>
  </tile>
  <tile id="53">
   <properties>
    <property name="collisionGroup" value="2"/>
-   <property name="level" value=""/>
+   <property name="type" value="Exit"/>
   </properties>
  </tile>
  <tile id="54">
   <properties>
    <property name="collisionGroup" value="2"/>
-   <property name="level" value=""/>
+   <property name="type" value="Exit"/>
+  </properties>
+ </tile>
+ <tile id="55">
+  <properties>
+   <property name="direction" value="B"/>
+   <property name="type" value="Bow"/>
   </properties>
  </tile>
  <tile id="56">
@@ -276,6 +300,11 @@
  <tile id="62">
   <properties>
    <property name="type" value="Block"/>
+  </properties>
+ </tile>
+ <tile id="63">
+  <properties>
+   <property name="type" value="Techcard"/>
   </properties>
  </tile>
 </tileset>

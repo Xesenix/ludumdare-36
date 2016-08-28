@@ -213,7 +213,7 @@
   <tile id="44">
    <properties>
     <property name="collisionGroup" value="2"/>
-    <property name="level" value=""/>
+    <property name="type" value="Exit"/>
    </properties>
   </tile>
   <tile id="45">
@@ -257,19 +257,19 @@
   <tile id="52">
    <properties>
     <property name="collisionGroup" value="2"/>
-    <property name="level" value=""/>
+    <property name="type" value="Exit"/>
    </properties>
   </tile>
   <tile id="53">
    <properties>
     <property name="collisionGroup" value="2"/>
-    <property name="level" value=""/>
+    <property name="type" value="Exit"/>
    </properties>
   </tile>
   <tile id="54">
    <properties>
     <property name="collisionGroup" value="2"/>
-    <property name="level" value=""/>
+    <property name="type" value="Exit"/>
    </properties>
   </tile>
   <tile id="55">
@@ -316,7 +316,7 @@
  </layer>
  <layer name="Objects" width="12" height="9">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgwAQWWMSQgQOUtsMhj0+/PRYxXOaQA2Bm2ZLoBnzyqiS6wQGLGLofsakhBgAAYzrl3bABAAA=
+   H4sIAAAAAAAAC2NgwAQWWMSQgQOUtsMhj0+/PRYxXOaQA2Bm2aKJmxNwAwMeeVUS3eCARQzdj9jUEAMAFnoC+bABAAA=
   </data>
  </layer>
 </map>

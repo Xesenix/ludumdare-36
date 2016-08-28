@@ -311,12 +311,12 @@
  </tileset>
  <layer name="Layout" width="12" height="9">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC1NjYGDQIRKrAbEREKsCsSWURseWSLQxknpsatAxunpLNPMIqUe3wxLNDGzqiTWfkFuwqcemBtleY2iYmhDAplCaC4gBNskNHbABAAA=
+   H4sIAAAAAAAAC1NjYGBgBGIdNCyJxmcCYjWoWgUgViWA5aF6jIhQawnFxkAsBcQqWOSw6TPGYr4lFj34zMdnDzbzsalHNp8TiCWIcBMIm0PDFKTHBAlz4REHAMlg87awAQAA
   </data>
  </layer>
  <layer name="Objects" width="12" height="9">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgYGCwYCAd6OORsyXDPHzAgcrmwYA9lLZDE0fnIwMHIDYgoN6BfCdhBaZIbAAVS0ScsAEAAA==
+   H4sIAAAAAAAAC2NgIB/YI2EGJBodOGBRb49HPQMWeXxqHXCoIcZ8ELbFow5mPj6z8JmPD5iTaCYIAACywCUMsAEAAA==
   </data>
  </layer>
 </map>

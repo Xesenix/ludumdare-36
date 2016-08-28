@@ -8,6 +8,7 @@ function Preload() {
 
 Preload.prototype = {
 	preload: function() {
+		console.log('preload assets');
 		this.asset = this.add.sprite(this.world.width / 2, this.world.height / 2, 'preloader');
 		this.asset.anchor.setTo(0.5, 0.5);
 
@@ -23,28 +24,36 @@ Preload.prototype = {
 		this.load.image('arrow', 'assets/arrow.png');
 		this.load.image('techcard', 'assets/techcard.png');
 		this.load.image('arrow-dead', 'assets/broken-arrow.png');
+		this.load.image('lock', 'assets/lock.png');
 		
-		this.load.tilemap('map', 'assets/test.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('menu', 'assets/menu.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('tutorial', 'assets/tutorial.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.tilemap('level-1', 'assets/level01.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.tilemap('level-2', 'assets/level02.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.tilemap('level-3', 'assets/level03.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.tilemap('level-4', 'assets/level04.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.tilemap('level-5', 'assets/level05.json', null, Phaser.Tilemap.TILED_JSON);
+		this.load.tilemap('level-6', 'assets/level06.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.image('tiles', 'assets/tiles.png');
 		
 		this.load.audio('melody', 'assets/melody01.wav');
+		
+		this.load.image('btn', 'assets/btn.png');
 
 	},
 	create: function() {
 		this.asset.cropEnabled = false;
-	},
-	update: function() {
-		if (!!this.ready) {
-			this.game.state.start('play');
-		}
+		
+		this.infoLabel = this.game.add.text(
+			this.game.world.centerX, 
+			this.game.world.centerY, 
+			'Loading assets...', 
+			{ font: '18px ' + this.game.theme.font, fill: '#ffffff', align: 'center'}
+		);
+		this.infoLabel.anchor.setTo(0.5, 0.5);
 	},
 	onLoadComplete: function() {
-		this.ready = true;
+		this.game.state.start('intro');
 	}
 };
 
