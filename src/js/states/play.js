@@ -210,7 +210,7 @@ Play.prototype = {
 		this.game.debug.body(this.arrowsGroup);
 		this.game.debug.body(this.collectableGroup);
 		
-		//_.each(this.hearos, _.bind(function(obj) {this.game.debug.body(obj);}, this));
+		//_.each(this.commandableGroup, _.bind(function(obj) {this.game.debug.body(obj);}, this));
 		//_.each(this.arrows, _.bind(function(obj) {this.game.debug.body(obj);}, this));
 		//this.game.debug.cameraInfo(this.game.camera, 32, 32);
 	},
