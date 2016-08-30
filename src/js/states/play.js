@@ -112,7 +112,7 @@ Play.prototype = {
 			}, this));
 		}, this));
 		
-		this.game.add.tween(this.mapTiles).from({ alpha: 0}, 500, Phaser.Easing.Linear.NONE, true, 100 * (this.hero.y / 64), 0, false);
+		this.game.add.tween(this.mapTiles).from({ alpha: 0}, 500, Phaser.Easing.Linear.NONE, true, 100 * this.hero.y / 64, 0, false);
 		this.game.add.tween(this.world).to({ alpha: 1}, 500, Phaser.Easing.Linear.NONE, true, 0, 0, false);
 		
 		this.createInterface();
@@ -193,18 +193,19 @@ Play.prototype = {
 	onKeyboardUp: function () {
 	},
 	update: function() {
+		// console.log('-------update---------');
 		if (this.executing === 0 && this.commandQueue.length > this.commandQueueIndex) {
 			this.commandableGroup.forEachAlive(this.startObjectCommand, this);
 			this.commandQueueIndex ++;
 		}
 		
 		// use overlap for checking collision groups  
+		
 		this.game.physics.arcade.overlap(this.mapTiles, this.commandableGroup, _.bind(this.onTileCollision, this));
 		this.game.physics.arcade.overlap(this.mapTiles, this.arrowsGroup, _.bind(this.onArrowTileCollision, this));
 		
 		this.game.physics.arcade.overlap(this.commandableGroup, this.arrowsGroup, _.bind(this.onArrowCollision, this));
 		this.game.physics.arcade.overlap(this.commandableGroup, this.commandableGroup, _.bind(this.onCollision, this));
-		
 		this.game.physics.arcade.overlap(this.commandableGroup, this.collectableGroup, _.bind(this.onCollectableCollision, this));
 		
 		this.game.debug.body(this.arrowsGroup);
@@ -215,13 +216,14 @@ Play.prototype = {
 		//this.game.debug.cameraInfo(this.game.camera, 32, 32);
 	},
 	onArrowCollision: function(obj, arrow) {
-		//console.log('onArrowCollision', obj, arrow);
-		arrow.onDeath();
-		
-		obj.hp -= Math.max(arrow.dmg - obj.def, 0);
-		
-		if (obj.hp <= 0) {
-			obj.onDeath();
+		if (arrow.alive) {
+			arrow.onDeath();
+
+			obj.hp -= Math.max(arrow.dmg - obj.def, 0);
+
+			if (obj.hp <= 0) {
+				obj.onDeath();
+			}
 		}
 	},
 	onArrowTileCollision: function(arrow, tile) {
@@ -232,9 +234,10 @@ Play.prototype = {
 	},
 	onTileCollision: function(obj, tile) {
 		//a.stop();
-		//console.log('collision', obj, tile);
 		if (parseInt(tile.properties.collisionGroup | 0) & obj.collisionMask) {
+			//console.log('tile collision', tile.x, tile.y, tile.properties.collisionGroup, obj.collisionMask);
 			obj.stop();
+			return false;
 		} else if (tile.properties.type === 'Exit') {
 			if (this.collectableAmount === this.collectedAmount) {
 				obj.stop();
@@ -247,22 +250,17 @@ Play.prototype = {
 				}
 			} else {
 				if (typeof this.scoreLabelTween === 'undefined' || !this.scoreLabelTween.isRunning) {
-					console.log('not end');
+					//console.log('not end');
 					this.scoreLabel.y = 10;
 					this.scoreLabelTween.start();
 				}
 			}
 		}
+		
+		return true;
 	},
 	onCollision: function(objA, objB) {
-		if (objA.hp <= 0 && !objA.blocksOnDeath) {
-			return;
-		}
-		
-		if (objB.hp <= 0 && !objB.blocksOnDeath) {
-			return;
-		}
-		
+		// console.log('collision', objA.index, objB.index);
 		if (objA.currentAction !== null) {
 			if ((objA.currentAction.x > 0 && objA.body.x < objB.body.x) || (objA.currentAction.x < 0 && objA.body.x > objB.body.x)) {
 				objB.hp -= Math.max(objA.dmg - objB.def, 0);
@@ -271,7 +269,7 @@ Play.prototype = {
 				objB.hp -= Math.max(objA.dmg - objB.def, 0);
 			}
 			objA.hp -= objA.collisionDmg;
-			objA.stop();
+
 		}
 		if (objB.currentAction !== null) {
 			if ((objB.currentAction.x > 0 && objB.body.x < objA.body.x) || (objB.currentAction.x < 0 && objB.body.x > objA.body.x)) {
@@ -280,17 +278,18 @@ Play.prototype = {
 			if ((objB.currentAction.y > 0 && objB.body.y < objA.body.y) || (objB.currentAction.y < 0 && objB.body.y > objA.body.y)) {
 				objA.hp -= Math.max(objB.dmg - objA.def, 0);
 			}
-			objB.hp -= objA.collisionDmg;
-			objB.stop();
+			objB.hp -= objB.collisionDmg;
+			//
 		}
 		
-		if (objA.hp <= 0) {
-			objA.onDeath();
+		if (objB.hit === objA) {
+			objB.hit = null;
+		} else {
+			// console.log('collision first', objA.index, objB.index);
+			objA.hit = objB;
 		}
-		
-		if (objB.hp <= 0) {
-			objB.onDeath();
-		}
+		objA.stop();
+		objB.stop();
 	},
 	onCollectableCollision: function(obj, collectable) {
 		//console.log('onCollectableCollision', obj, collectable);
@@ -303,20 +302,48 @@ Play.prototype = {
 	},
 	addCommand: function(command) {
 		//console.log('new command ', command);
-		this.commandQueue.push(command);
-		this.enabled = false;
+		if (this.commandQueue.length < this.commandQueueIndex + 3) {
+			this.commandQueue.push(command);
+			this.enabled = false;
+		}
 	},
 	startObjectCommand: function(object) {
 		if (object.controllable) {
 			this.executing ++;
+			// console.log('obj', object.index, this.executing);
+			//console.log('start', object.y, object.body.position.y, object.body.height, Math.floor((object.y - 32) / 64));
 			object.executeCommand(this.commandQueue[this.commandQueueIndex]).then(_.bind(this.onObjectCommandFinish, this, object));
 		}
 	},
-	onObjectCommandFinish: function(object) {
-		this.executing --;
-		// console.log('finished', object.x, object.y, object.body.position);
-		object.x = Math.round(object.body.position.x / 64) * 64 + 32;
-		object.y = Math.round(object.body.position.y / 64) * 64 + 32;
+	onObjectCommandFinish: function(object, action) {
+		-- this.executing;
+		//console.log('obj finish', object.index);
+		//console.log('finished', object.x, object.body.position.x, object.body.width, Math.floor((object.x - 32 + object.body.halfWidth + 32) / 64), action);
+		//console.log('corrected', object.body.position.x - 32 + object.body.halfWidth, Math.round((object.body.position.x - 32 + object.body.halfWidth) / 64),  Math.round((object.body.position.x - 32 + object.body.halfWidth - 30 * action.x / object.speed) / 64));
+		
+		object.body.position.x = Math.round((object.body.position.x - 32 + object.body.halfWidth - 30 * action.x / object.speed) / 64) * 64 + (32 - object.body.halfWidth);
+		//object.x = object.body.position.x + object.body.halfWidth;
+		//console.log('snap', object.x, object.body.position.x);
+		object.body.position.y = Math.round((object.body.position.y - 32 + object.body.halfHeight - 30 * action.y / object.speed) / 64) * 64 + (32 - object.body.halfHeight);
+		//object.y = object.body.position.y + object.body.halfHeight;
+		var target = {
+			x: object.body.position.x + object.body.halfWidth, 
+			y: object.body.position.y + object.body.halfHeight
+		};
+		//var distance = Math.min(Math.abs(target.x - object.x) + Math.abs(target.y - object.y), 1);
+		//object.x = target.x;
+		//object.y = target.y;
+		this.game.add.tween(object)
+			.to(target,
+				100,
+				Phaser.Easing.Linear.NONE,
+				true,
+				0,
+				0,
+				false
+			);
+		//object.hit = null;
+		this.game.physics.arcade.overlap(object, this.commandableGroup, _.bind(this.onCollision, this));
 		// console.log('snap', object.body.position);
 		// console.log('command executed', this.executing);
 	},

@@ -1,6 +1,6 @@
 'use strict';
 var ControllableGameObject = require('./controllable_game_object.js');
-
+var index = 0;
 function Bow(game, x, y, arrow, direction) {
 	ControllableGameObject.call(this, game, 2, 0, 2, 'bow', 'bow');
 	this.x = x;
@@ -23,6 +23,8 @@ function Bow(game, x, y, arrow, direction) {
 			this.angle = 0;
 			break;
 	}
+	
+	this.index = 'bow_' + index ++;
 }
 
 Bow.prototype = Object.create(ControllableGameObject.prototype);

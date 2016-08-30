@@ -9,7 +9,7 @@ function ControllableGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
 	
 	this.commandQueueIndex = 0;
 	this.commandQueue = [];
-	this.currentAction = null;
+	this.currentAction = { x: 0, y: 0 };
 	this.aliveSprite = aliveSprite;
 	this.deadSprite = deadSprite;
 	
@@ -17,7 +17,7 @@ function ControllableGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
 	this.dmg = dmg;
 	this.def = def;
 	this.collisionDmg = 0;
-	this.speed = 512;
+	this.speed = 1024;
 	this.range = 64;
 	
 	this.controllable = true;
@@ -76,7 +76,9 @@ ControllableGameObject.prototype.executeCommand = function(command) {
 };
 
 ControllableGameObject.prototype.update = function() {
-	if (this.commandDeffer !== null) {
+	if (this._hp <= 0 && this.alive) {
+		this.onDeath();
+	} else if (this.commandDeffer !== null) {
 		var distance = this.body.position.distance(this.startPosition);
 		
 		if (distance >= this.currentAction.stopDistance || (Math.abs(this.body.velocity.x) <= 0.1 && Math.abs(this.body.velocity.y) <= 0.1)) {
@@ -86,7 +88,7 @@ ControllableGameObject.prototype.update = function() {
 };
 
 ControllableGameObject.prototype.onDeath = function() {
-	// console.log('Dead', this);
+	// console.log('dead', this.index);
 	this.loadTexture(this.deadSprite);
 	this.alive = !this.canDie;
 	this.stop();
@@ -95,14 +97,14 @@ ControllableGameObject.prototype.onDeath = function() {
 };
 
 ControllableGameObject.prototype.stop = function() {
-	// console.log('stop', this);
-	this.body.velocity.x = 0;
-	this.body.velocity.y = 0;
-	this.body.immovable = true;
+	// console.log('stop', this.index);
 	if (this.commandDeffer !== null) {
-		this.commandDeffer();
+		this.commandDeffer(this.currentAction);
 		this.commandDeffer = null;
 	}
+	this.body.immovable = true;
+	this.body.velocity.x = 0;
+	this.body.velocity.y = 0;
 };
 
 module.exports = ControllableGameObject;

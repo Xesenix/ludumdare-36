@@ -38,7 +38,7 @@ Object.defineProperty(GameObject.prototype, 'hp', {
 	},
 
 	set: function(value) {
-		//console.log('HP:', value, this);
+		// console.log('HP:', value, this.index);
 		return this._hp = value;
 	}
 });
