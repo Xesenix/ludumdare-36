@@ -25,6 +25,8 @@ Preload.prototype = {
 		this.load.image('techcard', 'assets/techcard.png');
 		this.load.image('arrow-dead', 'assets/broken-arrow.png');
 		this.load.image('lock', 'assets/lock.png');
+		this.load.image('restart', 'assets/restart.png');
+		this.load.image('close', 'assets/close.png');
 		
 		this.load.tilemap('menu', 'assets/menu.json', null, Phaser.Tilemap.TILED_JSON);
 		this.load.tilemap('tutorial', 'assets/tutorial.json', null, Phaser.Tilemap.TILED_JSON);
@@ -39,6 +41,7 @@ Preload.prototype = {
 		this.load.audio('melody', 'assets/melody01.wav');
 		
 		this.load.image('btn', 'assets/btn.png');
+		this.load.spritesheet('mute', 'assets/mute.png', 64, 64);
 
 	},
 	create: function() {

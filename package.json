@@ -9,6 +9,7 @@
   "dependencies": {
     "lodash": "^4.15.0",
     "phaser": "^2.6.1",
+    "phaser-swipe": "^1.0.4",
     "promise": "^7.1.1"
   },
   "devDependencies": {

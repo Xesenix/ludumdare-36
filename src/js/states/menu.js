@@ -1,6 +1,7 @@
 'use strict';
 var _ = require('lodash');
 var LabelButton = require('../components/label_button.js');
+var MuteButton = require('../components/mute_button.js');
 
 function Menu() {}
 
@@ -25,6 +26,13 @@ Menu.prototype = {
 			}, this));
 			btn.tint = this.game.progress[key] ? 0x80ffaa : 0xaaaaaa;
 		}, this));
+		
+		this.muteButton = new MuteButton(this.game, 24, 24, 'mute');
+		this.muteButton.anchor.setTo(0.5, 0.5);
+		this.muteButton.width = 32;
+		this.muteButton.height = 32;
+		
+		this.world.add(this.muteButton);
 	},
 	createMenuButton: function(label, callback) {
 		var button = new LabelButton(this.game, this.world.width - 100, 68 + 64 * (this.menuItemIndex++), 'btn', label, callback, this, this);

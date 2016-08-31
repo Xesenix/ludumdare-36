@@ -8,6 +8,10 @@ var Block = require('../components/block.js');
 var Bow = require('../components/bow.js');
 var Arrow = require('../components/arrow.js');
 
+var Swipe = require('phaser-swipe');
+
+var MuteButton = require('../components/mute_button.js');
+
 function Play() {}
 
 Play.prototype = {
@@ -145,11 +149,28 @@ Play.prototype = {
 		this.infoLabel = this.game.add.text(
 			10, 
 			this.game.world.height - 10, 
-			'Use asdw or keys to move\nCollect all techcards to open passage to next level!', 
+			'Use asdw or keys to move, you can also swipe mouse left, right, up, down\nCollect all techcards to open passage to next level!', 
 			{ font: '18px ' + this.game.theme.font, fill: '#ffffff', align: 'left'}
 		);
 		this.infoLabel.anchor.setTo(0, 1);
 		this.infoLabel.fixedToCamera = true;
+		
+		this.muteButton = new MuteButton(this.game, 24, 24, 'mute');
+		this.muteButton.anchor.setTo(0.5, 0.5);
+		this.muteButton.width = 32;
+		this.muteButton.height = 32;
+		
+		this.world.add(this.muteButton);
+		
+		this.restartButton = this.game.add.button(56 + 10 * 64, 24, 'restart', _.bind(this.resetart, this));
+		this.restartButton.anchor.setTo(0.5, 0.5);
+		this.restartButton.width = 32;
+		this.restartButton.height = 32;
+		
+		this.menuButton = this.game.add.button(40 + 11 * 64, 24, 'close', _.bind(this.menu, this));
+		this.menuButton.anchor.setTo(0.5, 0.5);
+		this.menuButton.width = 32;
+		this.menuButton.height = 32;
 	},
 	updateInterface: function() {
 		
@@ -174,6 +195,13 @@ Play.prototype = {
 		
 		this.game.input.keyboard.onDownCallback = _.bind(this.onKeyboardDown, this);
 		this.game.input.keyboard.onUpCallback = _.bind(this.onKeyboardUp, this);
+		
+		this.swipe = new Swipe(this.game, {
+			left: _.bind(this.addCommand, this, 'left'),
+			right: _.bind(this.addCommand, this, 'right'),
+			up: _.bind(this.addCommand, this, 'up'),
+			down: _.bind(this.addCommand, this, 'down')
+		});
 	},
 	onKeyboardDown: function () {
 		var keyboard = this.game.input.keyboard;
@@ -194,6 +222,10 @@ Play.prototype = {
 	},
 	update: function() {
 		// console.log('-------update---------');
+		if (this.swipe != null) {
+			this.swipe.check();
+		}
+		
 		if (this.executing === 0 && this.commandQueue.length > this.commandQueueIndex) {
 			this.commandableGroup.forEachAlive(this.startObjectCommand, this);
 			this.commandQueueIndex ++;
@@ -301,7 +333,7 @@ Play.prototype = {
 		}
 	},
 	addCommand: function(command) {
-		//console.log('new command ', command);
+		// console.log('new command ', command);
 		if (this.commandQueue.length < this.commandQueueIndex + 3) {
 			this.commandQueue.push(command);
 			this.enabled = false;
