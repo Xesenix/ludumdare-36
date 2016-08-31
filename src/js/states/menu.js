@@ -1,4 +1,5 @@
 'use strict';
+/* global Phaser */
 var _ = require('lodash');
 var LabelButton = require('../components/label_button.js');
 var MuteButton = require('../components/mute_button.js');
@@ -16,6 +17,20 @@ Menu.prototype = {
 		
 		this.game.world.setBounds(-16, 0, 800, 600);
 		
+		var time = 400;
+		this.hero = this.game.add.sprite(6 * 64, 0 * 64, 'hero');
+		this.hero.alpha = 0;
+		this.heroTween = this.game.add.tween(this.hero).to({ x: 6 * 64, y: 4 * 64, alpha: 1 }, 200, Phaser.Easing.Linear.NONE, false, 200, 0, false);
+		this.heroTween.chain(
+			this.heroTween.to({ x: 4 * 64, y: 4 * 64 }, time * 2, Phaser.Easing.Linear.NONE, false, 200, 0, false),
+			this.heroTween.to({ x: 4 * 64, y: 7 * 64 }, time * 3, Phaser.Easing.Linear.NONE, false, 200, 0, false),
+			this.heroTween.to({ x: 5 * 64, y: 7 * 64 }, time * 1, Phaser.Easing.Linear.NONE, false, 200, 0, false),
+			this.heroTween.to({ alpha: 0 }, 100, Phaser.Easing.Linear.NONE, false, 200, 0, false),
+			this.heroTween.to({ x: 6 * 64, y: 0 * 64 }, 100, Phaser.Easing.Linear.NONE, false, 200, 0, false)
+		);
+		
+		//this.heroTween.repeat(5, 1500);
+		
 		this.menuItemIndex = 0;
 		
 		_.each(this.game.levels, _.bind(function(level, key) {
@@ -26,6 +41,12 @@ Menu.prototype = {
 			}, this));
 			btn.tint = this.game.progress[key] ? 0x80ffaa : 0xaaaaaa;
 		}, this));
+		
+		this.titleLabel = this.game.add.text(128, 192, 'Ancient Maze\nof Epla\nLudumdare 36', { font: '64px ' + this.game.theme.font, fill: '#ffffff', align: 'left'});
+		this.titleLabel.anchor.setTo(0, 0);
+		this.titleLabel.setShadow(5, 5, 'rgba(0,0,0,0.5)', 0);
+		
+		this.game.add.tween(this.titleLabel).from({ y: this.titleLabel.y - 124, alpha: 0 }, 1000, Phaser.Easing.Linear.NONE, true, 200, 0, false).chain(this.heroTween);
 		
 		this.muteButton = new MuteButton(this.game, 24, 24, 'mute');
 		this.muteButton.anchor.setTo(0.5, 0.5);

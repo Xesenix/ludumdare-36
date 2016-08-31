@@ -311,7 +311,7 @@
  </tileset>
  <layer name="Layout" width="12" height="9">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC43OsQqAMAxF0dStbk66KYJOTk0dxP//L5+QQChRMpwhcCEvEdER1EGBXSRYYAOGGy6DTW/bFYaf3rZqlv9eX5pWcbAfoUIf7HXL1/4Mk7PF67P8VmdzW+++BwAgAi2wAQAA
+   H4sIAAAAAAAAC43OsQqAMAxF0datbk66KYJOTm1BxP//L28hhSBVMpwpF/K8c+4w6hCxC48FGxJuXEpSvW5XDD+9bqtZ/rf6+GqLU+6WfkRGb+zrlq/9AVNjS6sP8tui7HsAmAG1XLABAAA=
   </data>
  </layer>
  <layer name="Objects" width="12" height="9">
