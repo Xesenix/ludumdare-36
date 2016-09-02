@@ -36,7 +36,8 @@ Play.prototype = {
 		this.game.state.start('gameover', true, false, {
 			level: this.level,
 			collectedAmount: this.collectedAmount,
-			collectableAmount: this.collectableAmount
+			collectableAmount: this.collectableAmount,
+			numberOfSteps: this.commandQueueIndex,
 		});
 	},
 	death: function() {
@@ -47,12 +48,12 @@ Play.prototype = {
 		this.game.time.events.add(Phaser.Timer.SECOND, _.bind(this.resetart, this));
 	},
 	create: function() {
-		//this.game.physics.startSystem(Phaser.Physics.ARCADE);
+		// this.game.physics.startSystem(Phaser.Physics.ARCADE);
 		
 		this.map = this.game.add.tilemap(this.level);
 		this.map.addTilesetImage('tiles', 'tiles');
 		this.mapTiles = this.map.createLayer('Layout');
-		//this.mapTiles.debug = true;
+		// this.mapTiles.debug = true;
 		
 		this.collectableGroup = this.game.add.group();
 		this.exitsGroup = this.game.add.group();
@@ -60,13 +61,13 @@ Play.prototype = {
 		this.commandableGroup = this.game.add.group();
 		
 		var objectsLayer = this.map.layers[this.map.getLayerIndex('Objects')];
-		//this.hearos = [];
-		//this.arrows = [];
+		// this.hearos = [];
+		// this.arrows = [];
 		this.heroesCount = 0;
 		
 		var gameObject = null;
 		this.game.world.setBounds(-16, 0, 800, 600);
-		//this.game.camera.x = -40;
+		// this.game.camera.x = -40;
 		
 		_.each(objectsLayer.data, _.bind(function(row) {
 			_.each(row, _.bind(function(tile) {
@@ -174,7 +175,7 @@ Play.prototype = {
 	},
 	updateInterface: function() {
 		
-		//this.scoreLabel.y = 10;
+		// this.scoreLabel.y = 10;
 		if (this.collectedAmount === this.collectableAmount) {
 			this.scoreLabel.text = '"Gates" are defeted!';
 			
@@ -194,7 +195,10 @@ Play.prototype = {
 		this.menuKey.onDown.add(_.bind(this.menu, this));
 		
 		this.game.input.keyboard.onDownCallback = _.bind(this.onKeyboardDown, this);
-		this.game.input.keyboard.onUpCallback = _.bind(this.onKeyboardUp, this);
+		// this.game.input.keyboard.onUpCallback = _.bind(this.onKeyboardUp, this);
+		
+		// fixes browser scrolling
+		// this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN]);
 		
 		this.swipe = new Swipe(this.game, {
 			left: _.bind(this.addCommand, this, 'left'),
@@ -206,17 +210,17 @@ Play.prototype = {
 	onKeyboardDown: function () {
 		var keyboard = this.game.input.keyboard;
 		
-		if (keyboard.isDown(Phaser.Keyboard.LEFT) || keyboard.isDown(Phaser.Keyboard.A)) {
+		if (keyboard.isDown(Phaser.Keyboard.A)) {
 			this.addCommand('left');
-		} else if (keyboard.isDown(Phaser.Keyboard.RIGHT) || keyboard.isDown(Phaser.Keyboard.D)) {
+		} else if (keyboard.isDown(Phaser.Keyboard.D)) {
 			this.addCommand('right');
-		} else if (keyboard.isDown(Phaser.Keyboard.UP) || keyboard.isDown(Phaser.Keyboard.W)) {
+		} else if (keyboard.isDown(Phaser.Keyboard.W)) {
 			this.addCommand('up');
-		} else if (keyboard.isDown(Phaser.Keyboard.DOWN) || keyboard.isDown(Phaser.Keyboard.S)) {
+		} else if (keyboard.isDown(Phaser.Keyboard.S)) {
 			this.addCommand('down');
 		}
 		
-		//console.log('executing ', this.executing, this.commandQueueIndex, this.commandQueue);
+		// console.log('executing ', this.executing, this.commandQueueIndex, this.commandQueue);
 	},
 	onKeyboardUp: function () {
 	},
@@ -240,12 +244,12 @@ Play.prototype = {
 		this.game.physics.arcade.overlap(this.commandableGroup, this.commandableGroup, _.bind(this.onCollision, this));
 		this.game.physics.arcade.overlap(this.commandableGroup, this.collectableGroup, _.bind(this.onCollectableCollision, this));
 		
-		this.game.debug.body(this.arrowsGroup);
-		this.game.debug.body(this.collectableGroup);
-		
-		//_.each(this.commandableGroup, _.bind(function(obj) {this.game.debug.body(obj);}, this));
-		//_.each(this.arrows, _.bind(function(obj) {this.game.debug.body(obj);}, this));
-		//this.game.debug.cameraInfo(this.game.camera, 32, 32);
+		// this.game.debug.body(this.arrowsGroup);
+		// this.game.debug.body(this.collectableGroup);
+
+		// _.each(this.commandableGroup, _.bind(function(obj) {this.game.debug.body(obj);}, this));
+		// _.each(this.arrows, _.bind(function(obj) {this.game.debug.body(obj);}, this));
+		// this.game.debug.cameraInfo(this.game.camera, 32, 32);
 	},
 	onArrowCollision: function(obj, arrow) {
 		if (arrow.alive) {
@@ -259,15 +263,15 @@ Play.prototype = {
 		}
 	},
 	onArrowTileCollision: function(arrow, tile) {
-		//console.log('onArrowTileCollision', tile, arrow);
+		// console.log('onArrowTileCollision', tile, arrow);
 		if (parseInt(tile.properties.collisionGroup | 0) & arrow.collisionMask) {
 			arrow.onDeath();
 		}
 	},
 	onTileCollision: function(obj, tile) {
-		//a.stop();
+		// a.stop();
 		if (parseInt(tile.properties.collisionGroup | 0) & obj.collisionMask) {
-			//console.log('tile collision', tile.x, tile.y, tile.properties.collisionGroup, obj.collisionMask);
+			// console.log('tile collision', tile.x, tile.y, tile.properties.collisionGroup, obj.collisionMask);
 			obj.stop();
 			return false;
 		} else if (tile.properties.type === 'Exit') {
@@ -282,7 +286,7 @@ Play.prototype = {
 				}
 			} else {
 				if (typeof this.scoreLabelTween === 'undefined' || !this.scoreLabelTween.isRunning) {
-					//console.log('not end');
+					// console.log('not end');
 					this.scoreLabel.y = 10;
 					this.scoreLabelTween.start();
 				}
@@ -311,7 +315,6 @@ Play.prototype = {
 				objA.hp -= Math.max(objB.dmg - objA.def, 0);
 			}
 			objB.hp -= objB.collisionDmg;
-			//
 		}
 		
 		if (objB.hit === objA) {
@@ -324,7 +327,7 @@ Play.prototype = {
 		objB.stop();
 	},
 	onCollectableCollision: function(obj, collectable) {
-		//console.log('onCollectableCollision', obj, collectable);
+		// console.log('onCollectableCollision', obj, collectable);
 		
 		if (obj.canCollect) {
 			collectable.collect();
@@ -343,30 +346,29 @@ Play.prototype = {
 		if (object.controllable) {
 			this.executing ++;
 			// console.log('obj', object.index, this.executing);
-			//console.log('start', object.y, object.body.position.y, object.body.height, Math.floor((object.y - 32) / 64));
+			// console.log('start', object.y, object.body.position.y, object.body.height, Math.floor((object.y - 32) / 64));
 			object.executeCommand(this.commandQueue[this.commandQueueIndex]).then(_.bind(this.onObjectCommandFinish, this, object));
 		}
 	},
 	onObjectCommandFinish: function(object, action) {
-		-- this.executing;
-		//console.log('obj finish', object.index);
-		//console.log('finished', object.x, object.body.position.x, object.body.width, Math.floor((object.x - 32 + object.body.halfWidth + 32) / 64), action);
-		//console.log('corrected', object.body.position.x - 32 + object.body.halfWidth, Math.round((object.body.position.x - 32 + object.body.halfWidth) / 64),  Math.round((object.body.position.x - 32 + object.body.halfWidth - 30 * action.x / object.speed) / 64));
+		// console.log('obj finish', object.index);
+		// console.log('finished', object.x, object.body.position.x, object.body.width, Math.floor((object.x - 32 + object.body.halfWidth + 32) / 64), action);
+		// console.log('corrected', object.body.position.x - 32 + object.body.halfWidth, Math.round((object.body.position.x - 32 + object.body.halfWidth) / 64),  Math.round((object.body.position.x - 32 + object.body.halfWidth - 30 * action.x / object.speed) / 64));
 		
 		object.body.position.x = Math.round((object.body.position.x - 32 + object.body.halfWidth - 30 * action.x / object.speed) / 64) * 64 + (32 - object.body.halfWidth);
-		//object.x = object.body.position.x + object.body.halfWidth;
-		//console.log('snap', object.x, object.body.position.x);
+		// object.x = object.body.position.x + object.body.halfWidth;
+		// console.log('snap', object.x, object.body.position.x);
 		object.body.position.y = Math.round((object.body.position.y - 32 + object.body.halfHeight - 30 * action.y / object.speed) / 64) * 64 + (32 - object.body.halfHeight);
-		//object.y = object.body.position.y + object.body.halfHeight;
+		// object.y = object.body.position.y + object.body.halfHeight;
 		var target = {
 			x: object.body.position.x + object.body.halfWidth, 
 			y: object.body.position.y + object.body.halfHeight
 		};
-		//var distance = Math.min(Math.abs(target.x - object.x) + Math.abs(target.y - object.y), 1);
-		//object.x = target.x;
-		//object.y = target.y;
-		this.game.add.tween(object)
-			.to(target,
+		// var distance = Math.min(Math.abs(target.x - object.x) + Math.abs(target.y - object.y), 1);
+		// object.x = target.x;
+		// object.y = target.y;
+		if (target.x !== object.x || target.y !== object.y) {
+			var tween = this.game.add.tween(object).to(target,
 				100,
 				Phaser.Easing.Linear.NONE,
 				true,
@@ -374,8 +376,16 @@ Play.prototype = {
 				0,
 				false
 			);
-		//object.hit = null;
-		this.game.physics.arcade.overlap(object, this.commandableGroup, _.bind(this.onCollision, this));
+			tween.onComplete.add(_.bind(function() {
+				// console.log('executing end tween', object.index, this.executing);
+				-- this.executing;
+			}, this), this);
+			// object.hit = null;
+			this.game.physics.arcade.overlap(object, this.commandableGroup, _.bind(this.onCollision, this));
+		} else {
+			// console.log('executing end', object.index, this.executing);
+			-- this.executing;
+		}
 		// console.log('snap', object.body.position);
 		// console.log('command executed', this.executing);
 	},
@@ -383,6 +393,53 @@ Play.prototype = {
 		// console.log('shutdown');
 		this.game.input.keyboard.onDownCallback = null;
 		this.game.input.keyboard.onUpCallback = null;
+		
+		if (this.scoreLabelTween) {
+			this.scoreLabelTween.onComplete.removeAll();
+			this.scoreLabelTween.stop();
+			this.scoreLabelTween = null;
+		}
+		
+		this.commandableGroup.destroy();
+		this.commandableGroup = null;
+		
+		this.arrowsGroup.destroy();
+		this.arrowsGroup = null;
+		
+		this.collectableGroup.destroy();
+		this.collectableGroup = null;
+		
+		this.exitsGroup.destroy();
+		this.exitsGroup = null;
+		
+		if (this.resetKey) {
+			this.resetKey.onDown.removeAll();
+			this.resetKey = null;
+		}
+		
+		if (this.menuKey) {
+			this.menuKey.onDown.removeAll();
+			this.menuKey = null;
+		}
+		
+		this.swipe = null;
+		
+		this.scoreLabel.kill();
+		this.scoreLabel = null;
+		
+		this.muteButton.kill();
+		this.muteButton = null;
+		
+		this.restartButton.kill();
+		this.restartButton = null;
+		
+		this.menuButton.kill();
+		this.menuButton = null;
+		
+		this.infoLabel.kill();
+		this.infoLabel = null;
+		
+		this.mapTiles = null;
 	}
 };
 

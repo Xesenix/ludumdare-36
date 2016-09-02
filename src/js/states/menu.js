@@ -46,7 +46,7 @@ Menu.prototype = {
 		this.titleLabel.anchor.setTo(0, 0);
 		this.titleLabel.setShadow(5, 5, 'rgba(0,0,0,0.5)', 0);
 		
-		this.game.add.tween(this.titleLabel).from({ y: this.titleLabel.y - 124, alpha: 0 }, 1000, Phaser.Easing.Linear.NONE, true, 200, 0, false).chain(this.heroTween);
+		this.titleLabelTween = this.game.add.tween(this.titleLabel).from({ y: this.titleLabel.y - 124, alpha: 0 }, 1000, Phaser.Easing.Linear.NONE, true, 200, 0, false).chain(this.heroTween);
 		
 		this.muteButton = new MuteButton(this.game, 24, 24, 'mute');
 		this.muteButton.anchor.setTo(0.5, 0.5);
@@ -54,6 +54,14 @@ Menu.prototype = {
 		this.muteButton.height = 32;
 		
 		this.world.add(this.muteButton);
+		
+		if (this.game.service !== null && this.game.service.user !== null && !this.game.service.user.guest) {
+			this.loginLabel = this.game.add.text(10, this.game.world.height - 10, 'Logged in as: ' + this.game.service.user.username, { font: '16px ' + this.game.theme.font, fill: '#ffffff', align: 'left'});
+			this.loginLabel.anchor.setTo(0, 1);
+		} else {
+			this.loginLabel = this.game.add.text(10, this.game.world.height - 10, 'Not logged in', { font: '16px ' + this.game.theme.font, fill: '#ffffff', align: 'left'});
+			this.loginLabel.anchor.setTo(0, 1);
+		}
 	},
 	createMenuButton: function(label, callback) {
 		var button = new LabelButton(this.game, this.world.width - 100, 68 + 64 * (this.menuItemIndex++), 'btn', label, callback, this, this);
@@ -66,6 +74,29 @@ Menu.prototype = {
 		this.game.world.add(button);
 		
 		return button;
+	},
+	shutdown: function() {
+		// console.log('shutdown');
+		if (this.heroTween) {
+			this.heroTween.onComplete.removeAll();
+			this.heroTween.stop();
+			this.heroTween = null;
+		}
+		
+		if (this.titleLabelTween) {
+			this.titleLabelTween.onComplete.removeAll();
+			this.titleLabelTween.stop();
+			this.titleLabelTween = null;
+		}
+		
+		this.hero.kill();
+		this.hero = null;
+
+		this.titleLabel.kill();
+		this.titleLabel = null;
+		
+		this.loginLabel.kill();
+		this.loginLabel = null;
 	}
 };
 

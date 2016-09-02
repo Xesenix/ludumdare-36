@@ -11,8 +11,15 @@ var LabelButton = function(game, x, y, key, text, callback, callbackContext, ove
 LabelButton.prototype = Object.create(Phaser.Button.prototype);
 LabelButton.prototype.constructor = LabelButton;
 
-Object.defineProperty(LabelButton.prototype, 'height', {
 
+LabelButton.prototype.destroy = function () {
+	this.label.kill();
+	this.label = null;
+	
+	this.game = null;
+};
+
+Object.defineProperty(LabelButton.prototype, 'height', {
 	get: function() {
 		return this.scale.x * this.texture.frame.height;
 	},
@@ -23,7 +30,6 @@ Object.defineProperty(LabelButton.prototype, 'height', {
 		this.label.scale.y = this.texture.frame.height / value;
 		this.label.y = this.label.scale.y * value * (0.5 - this.anchor.y);
 	}
-
 });
 
 Object.defineProperty(LabelButton.prototype, 'width', {
