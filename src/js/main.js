@@ -9,7 +9,11 @@
 	var PreloadState = require('./states/preload.js');
 	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 	
-	// Game States
+	// setup service on which game should work (kongregate/gamejolt or generic)
+	var ServiceApi = require('./generic/api.js');
+
+	game.service = ServiceApi;
+	game.service.init();
 	
 	game.state.add('boot', BootState);
 	game.state.add('gameover', GameoverState);

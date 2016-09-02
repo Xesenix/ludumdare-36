@@ -3,12 +3,12 @@
  <tileset firstgid="1" source="tiles.tsx"/>
  <layer name="Layout" width="12" height="8">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NkYGDQIRIzAbEREKsSiY2BWAaIlYGYDYhV0OTFgVgCTb0ZlK2JRS0XEHMi6TFGYqOrl8biZmMktiGUtkTjG+NQj8+PIDeZILnPBA8GqVFDwgDHs3zdgAEAAA==
+   H4sIAAAAAAAAC7NkYGCwJBGrItG4MKnmUGI+sfaRYr4qBepJwQDJSOzggAEAAA==
   </data>
  </layer>
  <layer name="Objects" width="12" height="8">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgIB3YUkGNPQ42CNiR5hyqAWR30MsNAH6xPgKAAQAA
+   H4sIAAAAAAAAC2NgIB3YQml7KG0HZdshieuRYS4M2KHR9kgYJq6HRT2p5tsTwKSaT46fATH9/2mAAQAA
   </data>
  </layer>
 </map>
