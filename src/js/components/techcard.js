@@ -1,6 +1,7 @@
 'use strict';
 var GameObject = require('./game_object.js');
 
+// collectible Game object responsible for opening doors to next level
 function Techcard(game, x, y) {
 	GameObject.call(this, game, 0, 0, 0, 'techcard', 'techcard');
 	this.x = x;

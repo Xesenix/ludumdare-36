@@ -13,6 +13,10 @@
 	var ServiceApi = require('./generic/api.js');
 
 	game.service = ServiceApi;
+	
+	// website page apis should manage user data
+	game.dataStorage = ServiceApi;
+	
 	game.service.init();
 	
 	game.state.add('boot', BootState);

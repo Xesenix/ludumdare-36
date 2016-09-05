@@ -1,5 +1,5 @@
 'use strict';
-/* global window, localStorage, Phaser */
+/* global window, Phaser */
 var _ = require('lodash');
 
 function Boot() {
@@ -10,13 +10,14 @@ Boot.prototype = {
 		console.log('preload boot');
 		this.load.image('preloader', 'assets/preloader.gif');
 		
+		// setup fonts and interface apperance
 		this.game.theme = {
 			font: 'VT323'
 		};
 		
 		window.WebFontConfig = {
 			active: _.bind(function() {
-				console.log('fonts ready 1');
+				console.log('fonts ready 1/2');
 				this.game.time.events.add(Phaser.Timer.SECOND, this.onFontsReady, this);
 			}, this),
 			google: {
@@ -29,6 +30,7 @@ Boot.prototype = {
 		console.log('boot create');
 		this.game.input.maxPointers = 1;
 		
+		// levels metadata
 		this.game.levels = {
 			'tutorial': {
 				index: 0,
@@ -74,19 +76,36 @@ Boot.prototype = {
 			}
 		};
 		
-		var save = JSON.parse(localStorage.getItem('save'));
+		this.fontsReady = false;
+		this.saveReady = false;
 		
+		this.game.dataStorage.getUserData('save').then(_.bind(this.onDataReady, this));
+	},
+	onFontsReady: function() {
+		console.log('fonts ready 2/2');
+		this.fontsReady = true;
+		
+		this.nextState();
+	},
+	onDataReady: function(saveData) {
+		// initialize what levels were already unlocked
 		this.game.progress = _.extend({
 			'tutorial': true,
 			'level-1': true,
 			'level-2': false,
 			'level-3': false,
 			'level-4': false,
-			'level-5': false,
-		}, save);
+			'level-5': false
+		}, saveData);
+		
+		this.saveReady = true;
+		
+		this.nextState();
 	},
-	onFontsReady: function() {
-		this.game.state.start('preload');
+	nextState: function() {
+		if (this.saveReady && this.fontsReady) {
+			this.game.state.start('preload');
+		}
 	}
 };
 

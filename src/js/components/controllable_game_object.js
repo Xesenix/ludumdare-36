@@ -7,20 +7,17 @@ var GameObject = require('./game_object.js');
 function ControllableGameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
 	GameObject.call(this, game,  hp, dmg, def, aliveSprite, deadSprite);
 	
-	this.commandQueueIndex = 0;
-	this.commandQueue = [];
+	// describes what Game Object should be doing in current turn transition
 	this.currentAction = { x: 0, y: 0 };
-	this.aliveSprite = aliveSprite;
-	this.deadSprite = deadSprite;
 	
-	this.hp = hp;
-	this.dmg = dmg;
-	this.def = def;
-	this.collisionDmg = 0;
+	// describes how fast shouldGame Object move in turn transition
 	this.speed = 1024;
+	// if moves pass this value durring turn transition it should stop and return finish event
 	this.range = 64;
-	
+	// tells if user commands should controll that GameObject
 	this.controllable = true;
+	
+	// callback that should be called after finished turn transition
 	this.commandDeffer = null;
 	
 	this.afterDeath = new Phaser.Signal();
@@ -50,17 +47,12 @@ ControllableGameObject.prototype.getAction = function(command) {
 };
 
 ControllableGameObject.prototype.executeCommand = function(command) {
+	// regenerate helth on turn start
 	this._hp = this._hpMax;
 	
 	var action = this.getAction(command);
 	
-	//action.x = Math.max(Math.min(action.x, 800 - 32), 32);
-	//action.y = Math.max(Math.min(action.y, 600 - 32), 32);
-	
-	//var distance = Math.max(Math.abs(this.x - action.x), Math.abs(this.y - action.y)) / 64;
-	
 	return new Promise(_.bind(function(resolve) {
-		//this.tween = this.game.add.tween(this).to(action, 200 * distance, Phaser.Easing.Linear.NONE, true, 0, 0, false);
 		this.currentAction = action;
 		
 		this.startPosition = _.clone(this.body.position);
@@ -77,8 +69,11 @@ ControllableGameObject.prototype.executeCommand = function(command) {
 
 ControllableGameObject.prototype.update = function() {
 	if (this._hp <= 0 && this.alive) {
+		// important do not check for death in collisions as that may turn off triggering of some events
+		// do it instead in update loop
 		this.onDeath();
 	} else if (this.commandDeffer !== null) {
+		// if in turn transition state check if end of transition was reached
 		var distance = this.body.position.distance(this.startPosition);
 		
 		if (distance >= this.currentAction.stopDistance || (Math.abs(this.body.velocity.x) <= 0.1 && Math.abs(this.body.velocity.y) <= 0.1)) {
@@ -88,11 +83,13 @@ ControllableGameObject.prototype.update = function() {
 };
 
 ControllableGameObject.prototype.onDeath = function() {
-	// console.log('dead', this.index);
+	// change GameObject texture
 	this.loadTexture(this.deadSprite);
+	// set inactive if it can be killed
 	this.alive = !this.canDie;
+	// stop moving
 	this.stop();
-	
+	// and return info about finished transition
 	this.afterDeath.dispatch();
 };
 

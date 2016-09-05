@@ -1,5 +1,5 @@
 'use strict';
-/* global Phaser, localStorage */
+/* global Phaser */
 var _ = require('lodash');
 
 var MuteButton = function(game, x, y, key) {
@@ -14,7 +14,7 @@ MuteButton.prototype.toggleMusic = function() {
 	this.game.sound.mute = !this.game.sound.mute;
 	this.updateState();
 	
-	localStorage.setItem('mute', JSON.stringify(this.game.sound.mute));
+	this.game.dataStorage.setUserData('mute', this.game.sound.mute);
 };
 
 MuteButton.prototype.updateState = function() {
@@ -26,7 +26,10 @@ MuteButton.prototype.updateState = function() {
 };
 
 MuteButton.loadState = function(game) {
-	game.sound.mute = JSON.parse(localStorage.getItem('mute')) || false;
+	game.sound.mute = false;
+	game.dataStorage.getUserData('mute').then(function(muted) {
+		game.sound.mute = muted;
+	});
 };
 
 module.exports = MuteButton;

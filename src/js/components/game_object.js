@@ -8,16 +8,27 @@ function GameObject(game, hp, dmg, def, aliveSprite, deadSprite) {
 	this.aliveSprite = aliveSprite;
 	this.deadSprite = deadSprite;
 	
+	// values used to deterimn result of collsions
 	this._hp = hp;
 	this._hpMax = hp;
 	this.dmg = dmg;
 	this.def = def;
 	
+	// how much damage will Game Object suffer from hitting something else
+	this.collisionDamage = 0;
+	
+	// tells if Game Object is and obstacle after death
 	this.blocksOnDeath = true;
+	// tells if when hp goes to or below 0 Game Object should set it self as inactive
 	this.canDie = false;
+	// tells if user commands should controll that GameObject
 	this.controllable = false;
+	// flag checked in collsions with collectable Game objects
 	this.canCollect = false;
 	
+	// insted of using standard arcade collisions we are using mask 
+	// for example so that player could move on stairs and othere object not
+	// this specific value tell that Game Objects collide with every kind of tile
 	this.collisionMask = 31;// everything
 	
 	this.physicsType = Phaser.SPRITE;
@@ -38,7 +49,6 @@ Object.defineProperty(GameObject.prototype, 'hp', {
 	},
 
 	set: function(value) {
-		// console.log('HP:', value, this.index);
 		return this._hp = value;
 	}
 });

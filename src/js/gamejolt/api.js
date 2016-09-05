@@ -4,7 +4,8 @@ var Promise = require('promise');
 var url = require('url');
 var md5 = require('js-md5');
 
-/* specific to your gamejolt api setup
+/* settings are declared outside of repo as they containg sensitive data
+specific to your gamejolt api setup example.:
 {
 	gameId: #GAME_ID#,
 	privateKey: #PRIVATE_KEY,
@@ -28,11 +29,10 @@ var API = {
 	},
 	user: null,
 	sendRequest: function(uri) {
-		// console.log('uri', uri);
+		// helper method for building and sending ajax requests to Gamejolt API 
 		return new Promise(function(resolve, reject) {
 			var signature = md5(uri + settings.privateKey);
 			uri += '&signature=' + signature;
-			// console.log('uri', uri);
 			
 			var request = new XMLHttpRequest();
 			request.open('GET', uri, true);
@@ -48,6 +48,7 @@ var API = {
 		});
 	},
 	getUser: function() {
+		// we need to check user credentials via ajax
 		return new Promise(function(resolve, reject) {
 			if (API.user === null) {
 				var urlParts = url.parse(window.location.href, true);
@@ -73,16 +74,19 @@ var API = {
 		});
 	},
 	setData: function(key, data) {
+		// game data is stored on Gamejolt web so we need to send ajax request
 		var uri = 'http://gamejolt.com/api/game/v1/data-store/set/?game_id=' + settings.gameId + '&key=' + key + '&data=' + data + '&format=json';
 
 		return API.sendRequest(uri);
 	},
 	getData: function(key) {
+		// game data is stored on Gamejolt web so we need to send ajax request
 		var uri = 'http://gamejolt.com/api/game/v1/data-store/?game_id=' + settings.gameId + '&key=' + key + '&format=json';
 
 		return API.sendRequest(uri);
 	},
 	setUserData: function(key, data) {
+		// user data is stored on Gamejolt web so we need to send ajax request
 		return API.getUser()
 			.then(function() {
 				var uri = 'http://gamejolt.com/api/game/v1/data-store/set/?game_id=' + settings.gameId + '&username=' + API.user.username + '&user_token=' + API.user.token + '&key=' + key + '&data=' + data + '&format=json';
@@ -91,6 +95,7 @@ var API = {
 			});
 	},
 	getUserData: function(key) {
+		// user data is stored on Gamejolt web so we need to send ajax request
 		return API.getUser()
 			.then(function() {
 				var uri = 'http://gamejolt.com/api/game/v1/data-store/?game_id=' + settings.gameId + '&username=' + API.user.username + '&user_token=' + API.user.token + '&key=' + key + '&format=json';
@@ -99,6 +104,7 @@ var API = {
 			});
 	},
 	addTrophy: function(trophyId) {
+		// trophies are set on Gamejolt web so we need to send ajax request
 		return API.getUser()
 			.then(function() {
 				var uri = 'http://gamejolt.com/api/game/v1/trophies/add-achieved/?game_id=' + settings.gameId + '&username=' + API.user.username + '&user_token=' + API.user.token + '&trophy_id=' + trophyId + '&format=json';
@@ -110,6 +116,7 @@ var API = {
 		// TODO: implement 
 	},
 	setScore: function(score, value) {
+		// scores are set on Gamejolt web so we need to send ajax request
 		return API.getUser()
 			.then(function() {
 				var uri = 'http://gamejolt.com/api/game/v1/scores/add/?game_id=' + settings.gameId + '&username=' + API.user.username + '&user_token=' + API.user.token + '&sort=' + value + '&format=json';
@@ -123,10 +130,14 @@ var API = {
 				}
 			});
 	},
+	setScores: function() {
+		// TODO: implement 
+	},
 	getScore: function() {
 		// TODO: implement 
 	},
 	checkTrophies: function(data) {
+		// we use settings to pass logic for awarding trophies (settings are declared outside of repo as they containg sensitive data)
 		if (typeof settings.checkTrophies === 'function') {
 			settings.checkTrophies(this, data);
 		}

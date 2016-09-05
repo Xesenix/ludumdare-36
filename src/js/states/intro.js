@@ -26,8 +26,6 @@ Intro.prototype = {
 		this.game.add.tween(this.authorLabel).from({ alpha: 0 }, 500, Phaser.Easing.Linear.NONE, true, 1000, 0, false);
 		this.game.add.tween(this.instructionsLabel).from({ alpha: 0 }, 500, Phaser.Easing.Linear.NONE, true, 1500, 0, false);
 		
-		//button.fixedToCamera = true;
-		
 		if (typeof this.game.music === 'undefined') {
 			this.game.music = this.game.add.audio('melody');
 

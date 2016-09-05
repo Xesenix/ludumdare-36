@@ -5,9 +5,12 @@ function Bow(game, x, y, arrow, direction) {
 	ControllableGameObject.call(this, game, 2, 0, 2, 'bow', 'bow');
 	this.x = x;
 	this.y = y;
+	
+	// arrow that will be shot by this bow in every turn
 	this.arrow = arrow;
 	this.arrow.alpha = 0;
 	
+	// rotate bow based on tile setup
 	this.direction = direction || 'D';
 	switch (this.direction) {
 		case 'R':
@@ -32,17 +35,14 @@ Bow.prototype.constructor = Bow;
 
 Bow.prototype.executeCommand = function() {
 	var action = this.getAction(this.direction);
+	
+	// reinitialize arrow before shot
 	this.arrow.body.x = action.x;
 	this.arrow.body.y = action.y;
 	this.arrow.angle = action.angle;
 	this.arrow.alive = true;
 	this.arrow.alpha = 1;
 	this.arrow.loadTexture(this.arrow.aliveSprite);
-	
-	//action.x = Math.max(Math.min(action.x, 800 - 32), 32);
-	//action.y = Math.max(Math.min(action.y, 600 - 32), 32);
-	
-	//var distance = Math.max(Math.abs(this.x - action.x), Math.abs(this.y - action.y)) / 64;
 	
 	return this.arrow.executeCommand(action.type);
 };

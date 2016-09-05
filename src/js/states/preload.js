@@ -49,7 +49,7 @@ Preload.prototype = {
 		
 		this.infoLabel = this.game.add.text(
 			this.game.world.centerX, 
-			this.game.world.centerY, 
+			this.game.world.centerY - 30, 
 			'Loading assets...', 
 			{ font: '18px ' + this.game.theme.font, fill: '#ffffff', align: 'center'}
 		);

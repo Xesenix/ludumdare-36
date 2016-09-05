@@ -11,15 +11,22 @@ Menu.prototype = {
 		console.log('preload menu');
 	},
 	create: function() {
+		// draw background for menu from tiles
 		this.map = this.game.add.tilemap('menu');
 		this.map.addTilesetImage('tiles', 'tiles');
 		this.mapTiles = this.map.createLayer('Layout');
 		
+		// center tiles
 		this.game.world.setBounds(-16, 0, 800, 600);
 		
+		// time needed for character to make accrose one tile
 		var time = 400;
+		
+		// add hero sprite
 		this.hero = this.game.add.sprite(6 * 64, 0 * 64, 'hero');
 		this.hero.alpha = 0;
+		
+		// setup loop animation for hero character
 		this.heroTween = this.game.add.tween(this.hero).to({ x: 6 * 64, y: 4 * 64, alpha: 1 }, 200, Phaser.Easing.Linear.NONE, false, 200, 0, false);
 		this.heroTween.chain(
 			this.heroTween.to({ x: 4 * 64, y: 4 * 64 }, time * 2, Phaser.Easing.Linear.NONE, false, 200, 0, false),
@@ -28,8 +35,6 @@ Menu.prototype = {
 			this.heroTween.to({ alpha: 0 }, 100, Phaser.Easing.Linear.NONE, false, 200, 0, false),
 			this.heroTween.to({ x: 6 * 64, y: 0 * 64 }, 100, Phaser.Easing.Linear.NONE, false, 200, 0, false)
 		);
-		
-		//this.heroTween.repeat(5, 1500);
 		
 		this.menuItemIndex = 0;
 		
@@ -46,6 +51,7 @@ Menu.prototype = {
 		this.titleLabel.anchor.setTo(0, 0);
 		this.titleLabel.setShadow(5, 5, 'rgba(0,0,0,0.5)', 0);
 		
+		// animate title slide in
 		this.titleLabelTween = this.game.add.tween(this.titleLabel).from({ y: this.titleLabel.y - 124, alpha: 0 }, 1000, Phaser.Easing.Linear.NONE, true, 200, 0, false).chain(this.heroTween);
 		
 		this.muteButton = new MuteButton(this.game, 24, 24, 'mute');
@@ -55,6 +61,7 @@ Menu.prototype = {
 		
 		this.world.add(this.muteButton);
 		
+		// do we have any info about player if yes display it?
 		if (this.game.service !== null && this.game.service.user !== null && !this.game.service.user.guest) {
 			this.loginLabel = this.game.add.text(10, this.game.world.height - 10, 'Logged in as: ' + this.game.service.user.username, { font: '16px ' + this.game.theme.font, fill: '#ffffff', align: 'left'});
 			this.loginLabel.anchor.setTo(0, 1);
@@ -64,19 +71,19 @@ Menu.prototype = {
 		}
 	},
 	createMenuButton: function(label, callback) {
+		// helper method for creating menu buttons one under another 
 		var button = new LabelButton(this.game, this.world.width - 100, 68 + 64 * (this.menuItemIndex++), 'btn', label, callback, this, this);
 		button.anchor.setTo(1, 0);
 		button.width = 184;	
 		button.height = 56;
 		button.label.setStyle({ font: '20px ' + this.game.theme.font, fill: '#000000', align: 'center' }, true);
-		//button.fixedToCamera = true;
 		
 		this.game.world.add(button);
 		
 		return button;
 	},
 	shutdown: function() {
-		// console.log('shutdown');
+		// clean up references and tweens
 		if (this.heroTween) {
 			this.heroTween.onComplete.removeAll();
 			this.heroTween.stop();

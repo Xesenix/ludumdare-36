@@ -27,12 +27,15 @@ Play.prototype = {
 		this.collectableAmount = 0;
 	},
 	menu: function() {
+		// player requested menu transition
 		this.game.state.start('menu');
 	},
 	resetart: function() {
+		// player requested restart
 		this.game.state.start('play', true, false, this.level);
 	},
 	end: function() {
+		// display level finished state
 		this.game.state.start('gameover', true, false, {
 			level: this.level,
 			collectedAmount: this.collectedAmount,
@@ -41,8 +44,11 @@ Play.prototype = {
 		});
 	},
 	death: function() {
+		// start death transition
 		this.game.add.tween(this.world).to({ alpha: 0}, 100, Phaser.Easing.Linear.NONE, true, 0, 0, false);
 		
+		// turn of controls
+		this.swipe = null;
 		this.game.input.keyboard.onDownCallback = null;
 		this.game.input.keyboard.onUpCallback = null;
 		this.game.time.events.add(Phaser.Timer.SECOND, _.bind(this.resetart, this));
@@ -61,13 +67,12 @@ Play.prototype = {
 		this.commandableGroup = this.game.add.group();
 		
 		var objectsLayer = this.map.layers[this.map.getLayerIndex('Objects')];
-		// this.hearos = [];
-		// this.arrows = [];
 		this.heroesCount = 0;
 		
-		var gameObject = null;
+		// center tiles
 		this.game.world.setBounds(-16, 0, 800, 600);
-		// this.game.camera.x = -40;
+		
+		var gameObject = null;
 		
 		_.each(objectsLayer.data, _.bind(function(row) {
 			_.each(row, _.bind(function(tile) {
@@ -75,7 +80,6 @@ Play.prototype = {
 					switch (tile.properties.type) {
 						case 'Hero':
 							this.hero = new Hero(this.game, tile.worldX + 32, tile.worldY + 32);
-							//this.hearos.push(hero);
 							this.startPosition = _.clone(this.hero.body.position);
 							this.heroesCount ++;
 							this.commandableGroup.add(this.hero);
@@ -95,7 +99,6 @@ Play.prototype = {
 							break;
 						case 'Bow':
 							var arrow = new Arrow(this.game, tile.worldX + 32, tile.worldY + 32);
-							//this.arrows.push(arrow);
 							this.arrowsGroup.add(arrow);
 							
 							gameObject = new Bow(this.game, tile.worldX + 32, tile.worldY + 32, arrow, tile.properties.direction);
@@ -117,6 +120,7 @@ Play.prototype = {
 			}, this));
 		}, this));
 		
+		// start fade in of level
 		this.game.add.tween(this.mapTiles).from({ alpha: 0}, 500, Phaser.Easing.Linear.NONE, true, 100 * this.hero.y / 64, 0, false);
 		this.game.add.tween(this.world).to({ alpha: 1}, 500, Phaser.Easing.Linear.NONE, true, 0, 0, false);
 		
@@ -125,6 +129,7 @@ Play.prototype = {
 		this.game.time.events.add(Phaser.Timer.SECOND * 1.1, _.bind(this.setupKeyboard, this));
 	},
 	createInterface: function() {
+		// remember to make interface elements fixedToCamera = true
 		this.scoreLabel = this.game.add.text(
 			this.game.world.centerX, 
 			10, 
@@ -133,7 +138,7 @@ Play.prototype = {
 		);
 		this.scoreLabel.anchor.setTo(0.5, 0);
 		this.scoreLabel.fixedToCamera = true;
-		
+	
 		this.scoreLabelTween = this.game.add.tween(this.scoreLabel).from({ y: 0 }, 200, Phaser.Easing.Linear.NONE, false, 0, 1, false)
 			.chain(this.game.add.tween(this.scoreLabel).to({ y: 10 }, 200, Phaser.Easing.Linear.NONE, false, 0, 0, false));
 		this.scoreLabelTween.onComplete.add(_.bind(this.updateInterface, this));
@@ -156,13 +161,6 @@ Play.prototype = {
 		this.infoLabel.anchor.setTo(0, 1);
 		this.infoLabel.fixedToCamera = true;
 		
-		this.muteButton = new MuteButton(this.game, 24, 24, 'mute');
-		this.muteButton.anchor.setTo(0.5, 0.5);
-		this.muteButton.width = 32;
-		this.muteButton.height = 32;
-		
-		this.world.add(this.muteButton);
-		
 		this.restartButton = this.game.add.button(56 + 10 * 64, 24, 'restart', _.bind(this.resetart, this));
 		this.restartButton.anchor.setTo(0.5, 0.5);
 		this.restartButton.width = 32;
@@ -172,17 +170,23 @@ Play.prototype = {
 		this.menuButton.anchor.setTo(0.5, 0.5);
 		this.menuButton.width = 32;
 		this.menuButton.height = 32;
+		
+		this.muteButton = new MuteButton(this.game, 24, 24, 'mute');
+		this.muteButton.anchor.setTo(0.5, 0.5);
+		this.muteButton.width = 32;
+		this.muteButton.height = 32;
+		
+		this.world.add(this.muteButton);
 	},
 	updateInterface: function() {
-		
-		// this.scoreLabel.y = 10;
+		// actualize iterface displayed values
 		if (this.collectedAmount === this.collectableAmount) {
-			this.scoreLabel.text = '"Gates" are defeted!';
+			this.scoreLabel.text = '"Gates" are defeted!\nnumber of steps: ' + this.commandQueueIndex;
 			
 			this.game.add.tween(this.exitsGroup).to({ alpha: 0, y: -64 }, 500, Phaser.Easing.Linear.NONE, true, 0, 0, false);
 			
 		} else {
-			this.scoreLabel.text = 'Techcards collected: ' + this.collectedAmount + ' / ' + this.collectableAmount;
+			this.scoreLabel.text = 'Techcards collected: ' + this.collectedAmount + ' / ' + this.collectableAmount + '\nnumber of steps: ' + this.commandQueueIndex;
 		}
 	},
 	setupKeyboard: function() {
@@ -194,12 +198,13 @@ Play.prototype = {
 		this.menuKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ESC);
 		this.menuKey.onDown.add(_.bind(this.menu, this));
 		
+		// turn on keyboard inputs
 		this.game.input.keyboard.onDownCallback = _.bind(this.onKeyboardDown, this);
-		// this.game.input.keyboard.onUpCallback = _.bind(this.onKeyboardUp, this);
 		
-		// fixes browser scrolling
+		// fixes browser scrolling - but when we use swipe this is not nesesary
 		// this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN]);
 		
+		// setup swipe commands
 		this.swipe = new Swipe(this.game, {
 			left: _.bind(this.addCommand, this, 'left'),
 			right: _.bind(this.addCommand, this, 'right'),
@@ -210,6 +215,7 @@ Play.prototype = {
 	onKeyboardDown: function () {
 		var keyboard = this.game.input.keyboard;
 		
+		// check for keyboard input
 		if (keyboard.isDown(Phaser.Keyboard.A)) {
 			this.addCommand('left');
 		} else if (keyboard.isDown(Phaser.Keyboard.D)) {
@@ -222,20 +228,22 @@ Play.prototype = {
 		
 		// console.log('executing ', this.executing, this.commandQueueIndex, this.commandQueue);
 	},
-	onKeyboardUp: function () {
-	},
 	update: function() {
 		// console.log('-------update---------');
+		
+		// check for mouse input
 		if (this.swipe != null) {
 			this.swipe.check();
 		}
 		
+		// check if all GameObjects finished transit to new turn and if yes and we have more commands start next turn transition
 		if (this.executing === 0 && this.commandQueue.length > this.commandQueueIndex) {
 			this.commandableGroup.forEachAlive(this.startObjectCommand, this);
 			this.commandQueueIndex ++;
+			this.updateInterface();
 		}
 		
-		// use overlap for checking collision groups  
+		// use overlap for checking collision groups so we can decide what collides and what does not 
 		
 		this.game.physics.arcade.overlap(this.mapTiles, this.commandableGroup, _.bind(this.onTileCollision, this));
 		this.game.physics.arcade.overlap(this.mapTiles, this.arrowsGroup, _.bind(this.onArrowTileCollision, this));
@@ -244,14 +252,12 @@ Play.prototype = {
 		this.game.physics.arcade.overlap(this.commandableGroup, this.commandableGroup, _.bind(this.onCollision, this));
 		this.game.physics.arcade.overlap(this.commandableGroup, this.collectableGroup, _.bind(this.onCollectableCollision, this));
 		
-		// this.game.debug.body(this.arrowsGroup);
-		// this.game.debug.body(this.collectableGroup);
-
 		// _.each(this.commandableGroup, _.bind(function(obj) {this.game.debug.body(obj);}, this));
 		// _.each(this.arrows, _.bind(function(obj) {this.game.debug.body(obj);}, this));
 		// this.game.debug.cameraInfo(this.game.camera, 32, 32);
 	},
 	onArrowCollision: function(obj, arrow) {
+		// for simplification seperate loop for collisions with arrows
 		if (arrow.alive) {
 			arrow.onDeath();
 
@@ -269,12 +275,14 @@ Play.prototype = {
 		}
 	},
 	onTileCollision: function(obj, tile) {
-		// a.stop();
+		// as we do not se arcade collsions but only check for overlaping we can decide if tile should be movable for game object
+		// in thise way we can for example enable player to move on stairs and othere objects not
+		// we use binary operator & for checking collisions
 		if (parseInt(tile.properties.collisionGroup | 0) & obj.collisionMask) {
-			// console.log('tile collision', tile.x, tile.y, tile.properties.collisionGroup, obj.collisionMask);
 			obj.stop();
 			return false;
 		} else if (tile.properties.type === 'Exit') {
+			// if player entered exit check if he collected all keys 
 			if (this.collectableAmount === this.collectedAmount) {
 				obj.stop();
 				obj.parent.remove(obj);
@@ -282,11 +290,12 @@ Play.prototype = {
 				this.heroesCount --;
 
 				if (this.heroesCount === 0) {
+					// if all heros left level we can finish it
 					this.end();
 				}
 			} else {
+				// if not animate score label to indicate that more keys are needed
 				if (typeof this.scoreLabelTween === 'undefined' || !this.scoreLabelTween.isRunning) {
-					// console.log('not end');
 					this.scoreLabel.y = 10;
 					this.scoreLabelTween.start();
 				}
@@ -296,6 +305,8 @@ Play.prototype = {
 		return true;
 	},
 	onCollision: function(objA, objB) {
+		// that is probably most complicated part of game movment
+		// check what hit what and decide who should suffer injury
 		// console.log('collision', objA.index, objB.index);
 		if (objA.currentAction !== null) {
 			if ((objA.currentAction.x > 0 && objA.body.x < objB.body.x) || (objA.currentAction.x < 0 && objA.body.x > objB.body.x)) {
@@ -304,7 +315,7 @@ Play.prototype = {
 			if ((objA.currentAction.y > 0 && objA.body.y < objB.body.y) || (objA.currentAction.y < 0 && objA.body.y > objB.body.y)) {
 				objB.hp -= Math.max(objA.dmg - objB.def, 0);
 			}
-			objA.hp -= objA.collisionDmg;
+			objA.hp -= objA.collisionDamage;
 
 		}
 		if (objB.currentAction !== null) {
@@ -314,21 +325,21 @@ Play.prototype = {
 			if ((objB.currentAction.y > 0 && objB.body.y < objA.body.y) || (objB.currentAction.y < 0 && objB.body.y > objA.body.y)) {
 				objA.hp -= Math.max(objB.dmg - objA.def, 0);
 			}
-			objB.hp -= objB.collisionDmg;
+			objB.hp -= objB.collisionDamage;
 		}
 		
 		if (objB.hit === objA) {
+			// this was second collision check
 			objB.hit = null;
 		} else {
-			// console.log('collision first', objA.index, objB.index);
+			// this was first collision remember it
 			objA.hit = objB;
 		}
 		objA.stop();
 		objB.stop();
 	},
 	onCollectableCollision: function(obj, collectable) {
-		// console.log('onCollectableCollision', obj, collectable);
-		
+		// simplified collisions with Techcards as we have only one type of collectible items
 		if (obj.canCollect) {
 			collectable.collect();
 			this.collectedAmount ++;
@@ -336,37 +347,30 @@ Play.prototype = {
 		}
 	},
 	addCommand: function(command) {
-		// console.log('new command ', command);
+		// after player interaction add his command to buffor (max 2)
 		if (this.commandQueue.length < this.commandQueueIndex + 3) {
 			this.commandQueue.push(command);
 			this.enabled = false;
 		}
 	},
 	startObjectCommand: function(object) {
+		// for each controllable start executing transition to next turn
 		if (object.controllable) {
+			// semaphore for number of GameObjects running transition to next turn
 			this.executing ++;
-			// console.log('obj', object.index, this.executing);
-			// console.log('start', object.y, object.body.position.y, object.body.height, Math.floor((object.y - 32) / 64));
 			object.executeCommand(this.commandQueue[this.commandQueueIndex]).then(_.bind(this.onObjectCommandFinish, this, object));
 		}
 	},
 	onObjectCommandFinish: function(object, action) {
-		// console.log('obj finish', object.index);
-		// console.log('finished', object.x, object.body.position.x, object.body.width, Math.floor((object.x - 32 + object.body.halfWidth + 32) / 64), action);
-		// console.log('corrected', object.body.position.x - 32 + object.body.halfWidth, Math.round((object.body.position.x - 32 + object.body.halfWidth) / 64),  Math.round((object.body.position.x - 32 + object.body.halfWidth - 30 * action.x / object.speed) / 64));
-		
+		// we need snap player to tile center we do it with smooth tween
 		object.body.position.x = Math.round((object.body.position.x - 32 + object.body.halfWidth - 30 * action.x / object.speed) / 64) * 64 + (32 - object.body.halfWidth);
-		// object.x = object.body.position.x + object.body.halfWidth;
-		// console.log('snap', object.x, object.body.position.x);
 		object.body.position.y = Math.round((object.body.position.y - 32 + object.body.halfHeight - 30 * action.y / object.speed) / 64) * 64 + (32 - object.body.halfHeight);
-		// object.y = object.body.position.y + object.body.halfHeight;
+		
 		var target = {
 			x: object.body.position.x + object.body.halfWidth, 
 			y: object.body.position.y + object.body.halfHeight
 		};
-		// var distance = Math.min(Math.abs(target.x - object.x) + Math.abs(target.y - object.y), 1);
-		// object.x = target.x;
-		// object.y = target.y;
+		
 		if (target.x !== object.x || target.y !== object.y) {
 			var tween = this.game.add.tween(object).to(target,
 				100,
@@ -377,20 +381,19 @@ Play.prototype = {
 				false
 			);
 			tween.onComplete.add(_.bind(function() {
-				// console.log('executing end tween', object.index, this.executing);
+				// semaphore for number of GameObjects running transition to next turn
 				-- this.executing;
 			}, this), this);
 			// object.hit = null;
 			this.game.physics.arcade.overlap(object, this.commandableGroup, _.bind(this.onCollision, this));
 		} else {
-			// console.log('executing end', object.index, this.executing);
+			// no snapping needed
+			// semaphore for number of GameObjects running transition to next turn
 			-- this.executing;
 		}
-		// console.log('snap', object.body.position);
-		// console.log('command executed', this.executing);
 	},
 	shutdown: function() {
-		// console.log('shutdown');
+		// clean up references and tweens
 		this.game.input.keyboard.onDownCallback = null;
 		this.game.input.keyboard.onUpCallback = null;
 		

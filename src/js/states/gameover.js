@@ -1,5 +1,4 @@
 'use strict';
-/* global localStorage */
 var _ = require('lodash');
 var LabelButton = require('../components/label_button.js');
 
@@ -9,19 +8,26 @@ GameOver.prototype = {
 	init: function(result) {
 		this.result = result;
 		
+		// get finished level metadata
 		this.levelInfo = this.game.levels[this.result.level];
+		
+		// unlock next level
 		this.game.progress[this.levelInfo.next] = true;
 
-		localStorage.setItem('save', JSON.stringify(this.game.progress));
+		// save game progress
+		this.game.dataStorage.setUserData('save', this.game.progress);
 		
+		// update scores
 		this.game.service.setScore('LevelReached', this.levelInfo.index);
 		this.game.service.setScore('Level' + this.levelInfo.index + 'Steps', this.result.numberOfSteps);
 		
+		// check for new achievements
 		this.game.service.checkTrophies({
 			level: this.levelInfo.index,
 			steps: this.result.numberOfSteps
 		});
 		
+		// also if there is no more levels set score for completion
 		if (this.levelInfo.next === null) {
 			this.game.service.setScore('GameCompleted', 1);
 		}
@@ -80,6 +86,7 @@ GameOver.prototype = {
 		this.game.state.start('play', true, false, this.levelInfo.next);
 	},
 	shutdown: function() {
+		// clean up references
 		this.game.input.keyboard.onDownCallback = null;
 		this.game.input.keyboard.onUpCallback = null;
 		
