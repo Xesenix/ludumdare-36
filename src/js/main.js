@@ -10,7 +10,7 @@
 	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 	
 	// setup service on which game should work (kongregate/gamejolt or generic)
-	var ServiceApi = require('./generic/api.js');
+	var ServiceApi = require('./gamejolt/api.js');
 
 	game.service = ServiceApi;
 	
