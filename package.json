@@ -6,6 +6,10 @@
   "keywords": [
     "phaser"
   ],
+  "scripts": {
+    "start": "concurrently \"grunt\" \"npm run open\"",
+    "open": "http-server -a localhost -p 4200 -o /index.html"
+  },
   "dependencies": {
     "js-md5": "^0.4.1",
     "lodash": "^4.15.0",
@@ -14,7 +18,10 @@
     "promise": "^7.1.1"
   },
   "devDependencies": {
+    "@types/concurrently": "^5.2.1",
+    "@types/http-server": "^0.10.1",
     "babelify": "^7.3.0",
+    "concurrently": "^5.3.0",
     "grunt": "~0.4.2",
     "grunt-babel": "^6.0.0",
     "grunt-browserify": "^5.0.0",
@@ -22,6 +29,7 @@
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
+    "http-server": "^0.12.3",
     "nodeunit": "^0.9.1"
   }
 }
